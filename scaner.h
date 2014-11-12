@@ -1,5 +1,5 @@
 
-              //asdfg
+              //asdf
 //identifikator
 #define ID        0
 
