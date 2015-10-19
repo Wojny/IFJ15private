@@ -1,52 +1,50 @@
+//hlavicka pro lexikalni analyzator
 
-              //asdf
+
+
+#define ERROR     -1
 //identifikator
 #define ID        0
 
 //klicova slova
-#define KBEGIN    1
-#define KBOOLEAN  2
-#define KDO       3
-#define KELSE     4
-#define KEND      5
-#define KFALSE    6
-#define KFIND     7
-#define KFORWARD  8
-#define KFUNCTION 9
-#define KIF       10
-#define KINTEGER  11
-#define KREADLN   12
-#define KREAL     13
-#define KSORT     14
-#define KSTRING   15
-#define KTHEN     16
-#define KTRUE     17
-#define KVAR      18
-#define KWHILE    19
-#define KWRITE    20
+#define KAUTO     1
+#define KCIN      2
+#define KCOUT     3
+#define KDOUBLE   4
+#define KELSE     5
+#define KFOR      6
+#define KIF       7
+#define KINT      8
+#define KRETURN   9
+#define KSTRING   10
 
-#define SETZERO   21
-#define READ      22
-#define WRITE     23
-#define WHILE     24
-#define SETZERO   25
-#define READ      26
-#define WRITE     27
-#define WHILE     28
-#define WHILE     29
-#define SETZERO   30
-#define READ      31
-#define WRITE     32
-#define WHILE     33
-#define SETZERO   34
-#define READ      35
+#define PLUS      11
+#define MINUS     12
+#define TIMES     13
+#define DIVIDE    14
+#define SEMICOLON 15
+#define LPARENTH  16
+#define RPARENTH  17
+#define EQ        18
+#define NEQ       19
+#define LEQ       20
+#define LE        21
+#define GEQ       22
+#define GR        23
+#define ASSIGN    24
+#define LBRACKET  25
+#define RBRACKET  26
 
-#define STR       36
-#define INTEGER   37
-#define REAL      38
+#define STR       27
+#define INTEGER   28
+#define DOUBLE    29
+#define COUT      30
+#define CIN       31
+
+#define END       32
 
 
 
 //hlavicka funkce simulujici lexikalni analyzator
-void setSourceFile(FILE *f);
-int getNextToken(string *attr);
+//void setSourceFile(FILE *f);
+//int getNextToken(string *attr);
