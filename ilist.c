@@ -26,7 +26,7 @@ void listInsertLast(tList *L, tInstr I)
 {
   tItemList *newItem;
   newItem = malloc(sizeof (tItemList));
-  newItem->Instruction = I;
+  newItem->instr = I;
   newItem->nextItem = NULL;
   if (L->first == NULL)
      L->first = newItem;
