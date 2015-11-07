@@ -2,23 +2,9 @@
 #include <stdlib.h>
 #include "str.c"
 #include "sym_table.h"
-/*
-union Dat
-{
-   int *i;
-   double *f;
-   string *str;
-} *datas;
 
-typedef struct BT{
-  string *ident;
-  int type;
-  int depth;
-  int key;
-  struct BT *LBT;
-  struct BT *RBT;
-}  *BTree;
-*/
+
+// inicializace polozky v tabulce symbolu
 int BTinit(BTree *BTnode){
   if((((*BTnode)=malloc(sizeof (struct BT)))==NULL)) return -1;
   (*BTnode)->ident=NULL;
@@ -31,6 +17,16 @@ int BTinit(BTree *BTnode){
 
 }
 
+
+// pridani nove polozky do tabulky symbolu
+/*
+@param1 koren tabulky symbolu
+@param2 identifikator promenne
+@param3 typ promenne
+@param4 hloubka zanoreni promenne
+@param5 poradi promenne ve funkci
+return ne/uspesnost vlozeni
+*/
 int BTAddID(BTree *BTroot,string *id, int type,int depth,int key){
   BTree pomBT=(*BTroot);
   if(pomBT->ident==NULL){
@@ -99,9 +95,14 @@ int BTAddID(BTree *BTroot,string *id, int type,int depth,int key){
 }
 
 
-
+//Prohledani stromove struktury tabulky symbolu zdali obsahuje dany identifikator
+/*
+@param1 koren tabulky symbolu
+@param2 identifikator hledane polozky
+return  vraci NULL pokud nenasel nebo polozku tabulky seznamu pokud nasel
+*/
 BTree SearchBT(BTree BTroot, string *id){
-  //BTree *pomBT=BTroot;
+
   if(BTroot==NULL) return NULL;
   if(BTroot->ident==NULL) return NULL;
   int cmp=0;
@@ -124,6 +125,13 @@ BTree SearchBT(BTree BTroot, string *id){
 }
 
 
+//odstraneni polozek z tabulky symbolu ktere jsou jiz neplatne (rekurzivne)
+/*
+@param1 koren tabulky symbolu
+@param2 od jake hloubky zanoreni se bude odstranovat
+@param3 pomocny seznam pro neplatne promenne z tabulky seznamu
+return  vraci 0 pri uspechu jinak neuspech
+*/
 int BTDelete(BTree *BTreeDisp,int depth,tempST *tmpST){
   if((*BTreeDisp)!=NULL){ // pokud je strom neprazdny
     if(((*BTreeDisp)->LBT)!=NULL){ // pokud je levy podstrom neprazdny tak dojde k odstraneni leveho podstromu
@@ -137,38 +145,24 @@ int BTDelete(BTree *BTreeDisp,int depth,tempST *tmpST){
         tempSTadd(tmpST,*BTreeDisp);
       }
     }
-    //free((*BTreeDisp)); // uvolneni prvku
-    //BTreeDisp=NULL;
+    
   }
   return 0;
 }
 
-//-----------------block table-------------
-/*typedef struct BlockUnit{
-  string *ident;
-  int type;
-  union Dat *data;
-  int init;
-
-} BU;
-
-//int BUinit(BU )
-
-
-
-//-----------------temp sym tab------------
-typedef struct TST{
-  BTree First;
-  BTree Last;
-} *tempST;*/
-
-
-
+    
+// inicializace zasobniku blokovych tabulek
 int BlockStackInit(BlockStack *BlStack){
   if((((*BlStack)=malloc(sizeof (struct Block_Stack)))==NULL)) return -1;
   (*BlStack)->First=NULL;
 }
-int BlockStackAdd(BlockStack *BlStack,GSTable *GST,string *id){
+//pridani nove tabulky do zasobniku
+/*
+@param1  zasobnik blokovych tabulek
+@param2  globalni tabulka symbolu
+return   vraci ne/uspesnost operace pridani
+*/
+int BlockStackAdd(BlockStack *BlStack,GSTable *GST){
   BU *newBU;
   BPtr newBPtr;
   if(((newBPtr=malloc(sizeof (struct BlockPtr)))==NULL)) return -1;
@@ -191,6 +185,11 @@ int BlockStackAdd(BlockStack *BlStack,GSTable *GST,string *id){
   }
 }
 
+//odstrani blokovou tabulku z vrcholu zasobniku
+/*
+param1 zasobnik blokovych tabulek
+return vraci ne/uspesnost operace
+*/
 int BlockStackDelete(BlockStack *BlStack){
   BPtr newBPtr=(*BlStack)->First;
   (*BlStack)->First=(*BlStack)->First->nxtBPtr;
@@ -199,12 +198,15 @@ int BlockStackDelete(BlockStack *BlStack){
 
 }
 
+//inicializace pomocneho seznamu neplatnych promennych
 int tempSTinit(tempST *tempTable){
   if((((*tempTable)=malloc(sizeof (struct TST)))==NULL)) return -1;
   (*tempTable)->First=NULL;
   (*tempTable)->Last=NULL;
   return 0;
 }
+
+//pridani polozky do pomocneho seznamu - vola se automaticky pri odstranovani z tabulky symbolu
 int tempSTadd(tempST *tempTable,BTree node){
   if((*tempTable)->First==NULL){
     node->LBT=NULL;
@@ -221,6 +223,7 @@ int tempSTadd(tempST *tempTable,BTree node){
   return 0;
 }
 
+// pomocna funkce pro vypocet delky pomocneho seznamu
 int tempSTlength(tempST tempTable){
   int i=0;
   BTree pomBT=tempTable->First;
@@ -231,10 +234,13 @@ int tempSTlength(tempST tempTable){
   return i;
 }
 
-
+// naplneni blokove tabulky polozkami z pomocneho seznamu
+/*
+@param1 pomocny seznam
+@param2 nova blokova tabulka
+return vraci ne/uspesnost operace
+*/
 int tempST2BU(tempST tempTable,BU *newBU){
-
-
   BTree pomBT=tempTable->First;
 
   while(pomBT!=NULL){
@@ -247,17 +253,18 @@ int tempST2BU(tempST tempTable,BU *newBU){
   return 0;
 }
 
-
+//odstraneni pomocneho seznamu
 int tempSTdelete(tempST *tempSTable){
   BTree pomBT=(*tempSTable)->First;
   while(pomBT!=NULL){
-   // strFree(pomBT->ident); //odstrani string ktery je v BU
+   
     pomBT->RBT->LBT=pomBT;
     pomBT=pomBT->RBT;
     free(pomBT->LBT);
   }
   return 0;
 }
+// odstraneni blokove tabulky
 int BUdelete(BU *Block, int BlockSize){
   int i=0;
   while(i<BlockSize){
@@ -271,27 +278,18 @@ int BUdelete(BU *Block, int BlockSize){
 
 //------------------------------------------
 //--------------------------GTS-------------
-/*typedef struct FunctionNode{
-  string *ident;
-  string *type;
-  int def;
-  BTree BTroot;
-  BU *Block;
-  int BlockSize;
-  tempST tempSTable;
-  struct FunctionNode *LFN;
-  struct FunctionNode *RFN;
-
-
-} *FN;
-typedef struct GlobalSystemTable{
-  FN FunRoot;
-} *GSTable;
-*/
+// inicializace struktury obsahujici odkaz na koren globalni tabulky symbolu
 int GSTinit(GSTable *GST){
   if((((*GST)=malloc(sizeof (struct GlobalSystemTable)))==NULL)) return -1;
   (*GST)->FunRoot=NULL;
 }
+// pridani nove funkce do globalni tabulky symbolu
+/*
+@param1 globalni tabulka symbolu
+@param2 identifikator funkce
+@param3 navratova hodnota funkce
+return vraci ne/uspesnost operace
+*/ 
 int GSTadd(GSTable *GST,string *id,int type){
   FN FunNode;
   if(((FunNode=malloc(sizeof (struct FunctionNode)))==NULL)) return -1;
@@ -383,6 +381,13 @@ int GSTadd(GSTable *GST,string *id,int type){
   }
 }
 
+
+//hledani funkce v globalni tabulce symbolu
+/*
+@param1 koren globalni tabulky symbolu
+@param2 identifikator hledane funkce
+return  odkaz na polozku funkce v globalni tabulce symbolu
+*/
 FN SearchFN(FN FNroot, string *id){
   FN pomFN=FNroot;
   if(FNroot==NULL) return NULL;
@@ -408,6 +413,11 @@ FN SearchFN(FN FNroot, string *id){
 
 }
 
+//odstraneni funkci z tabulky symbolu (rekurzivne)
+/*
+@param1 koren globalni tabulky symbolu
+return vraci ne/uspesnost operace
+*/
 int deleteFN(FN FNroot){
   if(FNroot==NULL) return 0;
   if(FNroot->LFN!=NULL) deleteFN(FNroot->LFN);
@@ -422,6 +432,7 @@ int deleteFN(FN FNroot){
 
 //--------------------konstanty---------------------
 
+//inicializace tabulky  konstant
 int constTableInit(constTable *newCTable){
   if((((*newCTable)=malloc(sizeof (struct cTable)))==NULL)) return -1;
   (*newCTable)->First=NULL;
@@ -430,6 +441,14 @@ int constTableInit(constTable *newCTable){
   (*newCTable)->BUAlloc=10;
   return 0;
 }
+
+//vytvoreni nove konstanty
+/*
+@param1 blokova tabulka konstant
+@param2 typ nove konstanty
+@param3 data nove konstanty
+return vraci odkaz na polozku v blokove tabulce konstant
+*/
 BTree constTableAdd(constTable *newCTable,int type,union Dat *data){
   BTree newBTree;
   if((*newCTable)->First==NULL){
@@ -469,12 +488,12 @@ BTree constTableAdd(constTable *newCTable,int type,union Dat *data){
 
 
 
-
-
-
-
-
 //----------------------------------------
+//inicializace datove polozky
+/*
+@param1 typ novych dat
+return odkaz na nova data
+*/
 union Dat *createDat(int type){
   union Dat *pomDat;
   if((type==27)||(type==30)){
@@ -501,6 +520,15 @@ union Dat *createDat(int type){
   return pomDat;
 }
 
+//naplneni nebo aktualizovani dat
+/*
+@param1  odkaz na polozku dat
+@param2  typ novych dat
+@param3  pokud byl typ int vlozi se do dat tento parametr
+@param4  pokud byl typ double vlozi se do dat tento parametr
+@param5  pokud byl typ string vlozi se do dat tento parametr
+return  vraci ne/uspesnost operace
+*/
 int updateDat(union Dat *pomDat,int type,int i,double d,string *s){
   if((type==27)||(type==30)){
     strFree(pomDat->str);
@@ -518,6 +546,11 @@ int updateDat(union Dat *pomDat,int type,int i,double d,string *s){
   return 0;
 }
 
+//odstraneni datove polozky
+/*
+@param1 odkaz na datovou polozku
+return typ dat ulozenych v datove polozce
+*/
 int deleteDat(union Dat *pomDat,int type){
   if(type==27){
     strFree(pomDat->str);

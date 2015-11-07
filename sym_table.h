@@ -2,66 +2,78 @@
 #include <stdlib.h>
 //#include "str.h"
 
-union Dat
+union Dat   // data promennych a konstant
 {
    int *i;
    double *f;
    string *str;
 } *datas;
 
-typedef struct BT{
-  string *ident;
-  int type;
-  int depth;
-  int key;
-  int def;
-  struct BT *LBT;
-  struct BT *RBT;
+
+// listy binarniho vyhledavaciho stromu tabulky symbolu 
+//(plni funkci odkazu do blokove tabulky promennych a konstant za pomoci key coz oznacuje index)
+typedef struct BT{  
+  string *ident;  // jmeno promenne
+  int type;       // typ promenne
+  int depth;      // uroven zanoreni promenne
+  int key;        // poradi identifikatoru ve funkci a take index do blokove tabulky
+  int def;        // doslo k definici promenne
+  struct BT *LBT; // levy podstrom
+  struct BT *RBT; // pravy podstrom
 }  *BTree;
 
+
+//polozka v blokove tabulce
 typedef struct BlockUnit{
-  string *ident;
-  int type;
-  union Dat *data;
-  int init;
+  string *ident;   // jmeno promenne
+  int type;        // typ promenne
+  union Dat *data; // data promenne
+  int init;        // je nainicializovana
 } BU;
+
+//polozka jedna blokova tabulka
 typedef struct BlockPtr{
-  BU *BUPtr;
-  int BUSize;
-  struct BlockPtr *nxtBPtr;
+  BU *BUPtr;       // pole polozek structury BlockUnit
+  int BUSize;      // velikost pole
+  struct BlockPtr *nxtBPtr;  // odkaz na dalsi blokovou tabulku
 } *BPtr;
+// zasobnik ukazujici na vrchol blokovych tabulek
 typedef struct Block_Stack{
-  BPtr First;
+  BPtr First;   // odkaz na posledni vytvorenou blokovou tabulku
 } *BlockStack;
 
-
+// pomocny seznam pro ulozeni neplatnych promennych ve funkci z tabulky symbolu
 typedef struct TST{
-  BTree First;
-  BTree Last;
+  BTree First;  // prvni v seznamu
+  BTree Last;   // posledni v seznamu
 } *tempST;
 
+
+// polozka jedne funkce
 typedef struct FunctionNode{
-  string *ident;
-  string *type;
-  int def;
-  BTree BTroot;
-  int BlockSize;
-  tempST tempSTable;
-  struct FunctionNode *LFN;
-  struct FunctionNode *RFN;
+  string *ident;  // identifikator funkce
+  string *type;   // typ funkce
+  int def;        // definice funkce
+  BTree BTroot;   // odkaz na tabulku symbolu
+  int BlockSize;  // pocet promennych ve funkci
+  tempST tempSTable;  // odkaz na pomocny seznam neplatnych promennych ve funkci
+  struct FunctionNode *LFN;  // levy podstrom
+  struct FunctionNode *RFN;  // pravy podstrom
 
 
 } *FN;
+
+// struktura obsahujici odkaz na koren globalni tabulky symbolu
 typedef struct GlobalSystemTable{
-  FN FunRoot;
+  FN FunRoot;   // koren
 } *GSTable;
 
-
+// tabulka konstant
 typedef struct cTable{
-  BTree First;
-  BU *BUPtr;
-  int BUSize;
-  int BUAlloc;
+  BTree First; // seznam odkazu do blokove tabulky konstant
+  BU *BUPtr;   // blokova tabulka konstant
+  int BUSize;  // velikost blokove tabulky konstant
+  int BUAlloc; // velikost naalokovane tabulky konstant
 } *constTable;
 
 
