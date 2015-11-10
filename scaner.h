@@ -35,13 +35,17 @@
 #define LBRACKET  25
 #define RBRACKET  26
 
-#define STR       27
-#define INTEGER   28
-#define DOUBLE    29
-#define COUT      30
-#define CIN       31
+#define ISTR       27
+#define IINTEGER   28
+#define IDOUBLE    29
+#define CSTR      30
+#define CINTEGER  31
+#define CDOUBLE   32
 
-#define END       32
+#define COUT      33
+#define CIN       34
+
+#define END       35
 
 
 
