@@ -141,7 +141,7 @@ int getNextToken(string *attr){
 
         break;
       case 6:
-        if(c=='"') return STR; // konec retezce
+        if(c=='"') return CSTR; // konec retezce
         else if(c=='\n') return ERROR; // konec radku lexikalni chyba
         else if (c=='\\') state=7; // escape sekvence
         else if(c>=' ') strAddChar(attr,c); // nacitani retezce
@@ -190,7 +190,7 @@ int getNextToken(string *attr){
         else{ // cele cislo 0
           strAddChar(attr,'0');
           ungetc(c, source);
-          return INTEGER;
+          return CINTEGER;
 
         }
         break;
@@ -208,7 +208,7 @@ int getNextToken(string *attr){
         }
         else{ // vraci se nactene cele cislo
           ungetc(c, source);
-          return INTEGER;
+          return CINTEGER;
 
         }
         break;
@@ -229,7 +229,7 @@ int getNextToken(string *attr){
         }
         else{
           ungetc(c, source);
-          return DOUBLE; //vraci nactene desetinne cislo
+          return CDOUBLE; //vraci nactene desetinne cislo
         }
         break;
       case 12:
@@ -256,7 +256,7 @@ int getNextToken(string *attr){
         }
         else{
           ungetc(c, source);
-          return DOUBLE; // vraci realne cislo
+          return CDOUBLE; // vraci realne cislo
         }
         break;
 
