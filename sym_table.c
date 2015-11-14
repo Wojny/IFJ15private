@@ -4,6 +4,18 @@
 #include "sym_table.h"
 
 
+
+/*
+pro syntaktickou analyzu
+bude treba nadeklarovat nekolik pomocnych globalnich promennych pro praci s tabulkou symbolu:
+napr:
+GSTable GST; slouzi pro uchovani odkazu na globalni tabulku symbolu
+FN FunNode; slouzi pro uchovani aktualne zpracovavane funkce
+constTable ConTable; slouzi k uchovani odkazu na tabulku konstant
+int key; slouzi k uchovani poradi promennych ve funkci
+int depth; slouzi k uchovani hloubky zanoreni ve zdrojovem programu
+*/
+
 // inicializace polozky v tabulce symbolu
 int BTinit(BTree *BTnode){
   if((((*BTnode)=malloc(sizeof (struct BT)))==NULL)) return -1;
@@ -27,8 +39,12 @@ int BTinit(BTree *BTnode){
 @param5 poradi promenne ve funkci
 return ne/uspesnost vlozeni
 */
-int BTAddID(BTree *BTroot,string *id, int type,int depth,int key){
-  BTree pomBT=(*BTroot);
+/* SYN: pokud narazis na deklaraci promenne tak zavolas tuhle funkci a predas ji odkaz na prave zpracovavanou
+funkci(FunNode), potom predas identifikator promenne a typ promenne(typ tokenu pred identifikatorem),
+potom predas hloubku zanoreni a pote predas poradi identifikatoru ve funkci (po kazdem volani teto funkce tuto hodnotu musis inkrementovat a pokud vystoupis pri analyze z uzivatelem definovane funkce tak globalni hodnotu key vynuluj)
+*/
+int BTAddID(FN *FunNode,string *id, int type,int depth,int key){
+  BTree pomBT=(*FunNode)->BTroot;
   if(pomBT->ident==NULL){
     pomBT->ident=id;
     pomBT->type=type;
@@ -97,12 +113,16 @@ int BTAddID(BTree *BTroot,string *id, int type,int depth,int key){
 
 //Prohledani stromove struktury tabulky symbolu zdali obsahuje dany identifikator
 /*
-@param1 koren tabulky symbolu
+@param1 aktualni zpracovavana funkce
 @param2 identifikator hledane polozky
 return  vraci NULL pokud nenasel nebo polozku tabulky seznamu pokud nasel
 */
-BTree SearchBT(BTree BTroot, string *id){
-
+/*
+SYN: Pokud narazis na nejakou promennou a nebude to pri deklaraci tak timto overis zda promenna byla jiz deklarovana
+vraci NULL pokud nebyla deklarovana
+*/
+BTree SearchBT(FN *FunNode, string *id){
+  BTree BTroot=FunNode->BTroot;
   if(BTroot==NULL) return NULL;
   if(BTroot->ident==NULL) return NULL;
   int cmp=0;
@@ -131,6 +151,12 @@ BTree SearchBT(BTree BTroot, string *id){
 @param2 od jake hloubky zanoreni se bude odstranovat
 @param3 pomocny seznam pro neplatne promenne z tabulky seznamu
 return  vraci 0 pri uspechu jinak neuspech
+*/
+/*
+SYN: Pri opusteni funkce nebo pri vychodu z if nebo for tak zavolas tuto funkci
+jako prvni parametr zavolas globalni parametr aktualne zpracovavane funkce:
+FN *FunNode; je deklarace pomocne globalni promenne pro ulozeni odkazu na aktualne zpracovanou funkci
+a potom v teto funkci pouzijes BTDelete(FunNode->BTroot,depth,FunNode->tempSTable);
 */
 int BTDelete(BTree *BTreeDisp,int depth,tempST *tmpST){
   if((*BTreeDisp)!=NULL){ // pokud je strom neprazdny
@@ -288,16 +314,21 @@ int GSTinit(GSTable *GST){
 @param1 globalni tabulka symbolu
 @param2 identifikator funkce
 @param3 navratova hodnota funkce
-return vraci ne/uspesnost operace
+return odkaz na nove vytvorenou funkci
 */ 
-int GSTadd(GSTable *GST,string *id,int type){
+/*
+SYN: tuto funkci zavolas, pokud dojde k deklaraci nove funkce. Predas pomocnou promennou pro ulozeni globalni
+promenne ktera obsahuje odkaz na globalni tabulku symbolu (treba GSTable GST;)
+pote identifikator funkce a pote navratovy typ funkce
+*/
+FN *GSTadd(GSTable *GST,string *id,int type){
   FN FunNode;
-  if(((FunNode=malloc(sizeof (struct FunctionNode)))==NULL)) return -1;
+  if(((FunNode=malloc(sizeof (struct FunctionNode)))==NULL)) return NULL;
 
   if((*GST)->FunRoot==NULL){
     (*GST)->FunRoot=FunNode;
-    if(((FunNode->ident=malloc(sizeof (string)))==NULL)) return -1;
-    if(((FunNode->type=malloc(sizeof (string)))==NULL)) return -1;
+    if(((FunNode->ident=malloc(sizeof (string)))==NULL)) return NULL;
+    if(((FunNode->type=malloc(sizeof (string)))==NULL)) return NULL;
     strInit(FunNode->ident);
     strCopyString(FunNode->ident,id);
     strInit(FunNode->type);
@@ -309,6 +340,7 @@ int GSTadd(GSTable *GST,string *id,int type){
     FunNode->def=0;
     tempSTinit(&(FunNode->tempSTable));
     BTinit(&(FunNode->BTroot));
+    return FunNode;
   }
   else{
     FN pomFN=(*GST)->FunRoot;
@@ -320,8 +352,8 @@ int GSTadd(GSTable *GST,string *id,int type){
         //mozna i kontrola typu
         if(pomFN->LFN==NULL){
           pomFN->LFN=FunNode;
-          if(((FunNode->ident=malloc(sizeof (string)))==NULL)) return -1;
-          if(((FunNode->type=malloc(sizeof (string)))==NULL)) return -1;
+          if(((FunNode->ident=malloc(sizeof (string)))==NULL)) return NULL;
+          if(((FunNode->type=malloc(sizeof (string)))==NULL)) return NULL;
           strInit(FunNode->ident);
           strCopyString(FunNode->ident,id);
           strInit(FunNode->type);
@@ -333,15 +365,15 @@ int GSTadd(GSTable *GST,string *id,int type){
           FunNode->def=0;
           tempSTinit(&(FunNode->tempSTable));
           BTinit(&(FunNode->BTroot));
-          return 0;
+          return FunNode;
         }
         pomFN=pomFN->LFN;
       }
       else if(cmp>0){
         if(pomFN->RFN==NULL){
           pomFN->RFN=FunNode;
-          if(((FunNode->ident=malloc(sizeof (string)))==NULL)) return -1;
-          if(((FunNode->type=malloc(sizeof (string)))==NULL)) return -1;
+          if(((FunNode->ident=malloc(sizeof (string)))==NULL)) return NULL;
+          if(((FunNode->type=malloc(sizeof (string)))==NULL)) return NULL;
           strInit(FunNode->ident);
           strCopyString(FunNode->ident,id);
           strInit(FunNode->type);
@@ -353,15 +385,15 @@ int GSTadd(GSTable *GST,string *id,int type){
           FunNode->def=0;
           tempSTinit(&(FunNode->tempSTable));
           BTinit(&(FunNode->BTroot));
-          return 0;
+          return FunNode;
         }
         pomFN=pomFN->RFN;
       }
       else{
         if(pomFN->LFN==NULL){
           pomFN->LFN=FunNode;
-          if(((FunNode->ident=malloc(sizeof (string)))==NULL)) return -1;
-          if(((FunNode->type=malloc(sizeof (string)))==NULL)) return -1;
+          if(((FunNode->ident=malloc(sizeof (string)))==NULL)) return NULL;
+          if(((FunNode->type=malloc(sizeof (string)))==NULL)) return NULL;
           strInit(FunNode->ident);
           strCopyString(FunNode->ident,id);
           strInit(FunNode->type);
@@ -373,12 +405,25 @@ int GSTadd(GSTable *GST,string *id,int type){
           FunNode->def=0;
           tempSTinit(&(FunNode->tempSTable));
           BTinit(&(FunNode->BTroot));
-          return 0;
+          return FunNode;
         }
         pomFN=pomFN->LFN;
       }
     }
   }
+}
+
+//pridani typu parametru funkce do aktualne zpracovane funkce
+/*
+@param1 aktualne zpracovavana funkce
+@param2 typ dalsiho parametru funkce
+return vraci ne/uspesnost operace
+*/
+/*
+SYN: zavolas pri kazdem nacteni parametru funkce
+*/
+int addFunType(FN *FunNode,int type){
+
 }
 
 
@@ -387,6 +432,10 @@ int GSTadd(GSTable *GST,string *id,int type){
 @param1 koren globalni tabulky symbolu
 @param2 identifikator hledane funkce
 return  odkaz na polozku funkce v globalni tabulce symbolu
+*/
+/*
+SYN: zavolas pokud najdes pouziti nektere uzivatelem definovane funkce
+(napr: SearchFN(GST->FunRoot,ident))
 */
 FN SearchFN(FN FNroot, string *id){
   FN pomFN=FNroot;
@@ -485,8 +534,20 @@ BTree constTableAdd(constTable *newCTable,int type,union Dat *data){
   return newBTree;
 }
 
+//Vytvori novou konstantu a prida ji do tabulky konstant
+/*
+@param1 odkaz na tabulku konstant
+@param2 typ konstanty
+@param3 konstanta ulozena jako retezec
+return vraci odkaz na polozku v tabulce konstant
+*/
+/*
+SYN: zavolas pokud narazis na nejakou konstantu
+*/
+BTree createConst(constTable *newCTable,int type,string str){
 
 
+}
 
 //----------------------------------------
 //inicializace datove polozky
