@@ -693,27 +693,27 @@ int deleteDat(union Dat *pomDat,int type){
 
 
 int isConstOrVar(int type){
-  if((isConstant(type))||(isVar(type))) return 0;
-  else return -1;
+  if((isConstant(type))||(isVar(type))) return 1;
+  else return 0;
 }
 int isInteger(int type){
-  if((type==IINTEGER)||(type==CINTEGER)) return 0;
-  return 1;
+  if((type==IINTEGER)||(type==CINTEGER)) return 1;
+  return 0;
 }
 int isString(int type){
-  if((type==ISTR)||(type==CSTR)) return 0;
-  return 1;
+  if((type==ISTR)||(type==CSTR)) return 1;
+  return 0;
 }
 int isDouble(int type){
-  if((type==IDOUBLE)||(type==CDOUBLE)) return 0;
-  return 1;
+  if((type==IDOUBLE)||(type==CDOUBLE)) return 1;
+  return 0;
 }
 
 int isConstant(int type){
-  if((type==CINTEGER)||(type==CDOUBLE)||(type==CSTR)) return 0;
-  return 1;
+  if((type==CINTEGER)||(type==CDOUBLE)||(type==CSTR)) return 1;
+  return 0;
 }
 int isVar(int type){
-  if((type==IINTEGER)||(type==IDOUBLE)||(type==ISTR)) return 0;
-  return 1;
+  if((type==IINTEGER)||(type==IDOUBLE)||(type==ISTR)) return 1;
+  return 0;
 }
