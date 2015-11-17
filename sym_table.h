@@ -10,9 +10,9 @@ union Dat   // data promennych a konstant
 } *datas;
 
 
-// listy binarniho vyhledavaciho stromu tabulky symbolu 
+// listy binarniho vyhledavaciho stromu tabulky symbolu
 //(plni funkci odkazu do blokove tabulky promennych a konstant za pomoci key coz oznacuje index)
-typedef struct BT{  
+typedef struct BT{
   string *ident;  // jmeno promenne
   int type;       // typ promenne
   int depth;      // uroven zanoreni promenne
@@ -79,8 +79,9 @@ typedef struct cTable{
 
 
 int BTinit(BTree *BTnode);
-int BTAddID(BTree *BTroot,string *id, int type,int depth,int key);
-BTree SearchBT(BTree BTroot, string *id);
+int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key);
+BTree SearchBT(FN *FunNode, string *id);
+BTree SearchGetBT(BTree *BTroot,string *id);
 int BTDelete(BTree *BTreeDisp,int depth,tempST *tmpST);
 int tempSTinit(tempST *tempTable);
 int tempSTadd(tempST *tempTable,BTree node);
@@ -88,6 +89,7 @@ int tempSTlength(tempST tempTable);
 int tempST2BU(tempST tempTable,BU *newBU);
 int GSTinit(GSTable *GST);
 int GSTadd(GSTable *GST,string *id,int type);
+int addFunType(FN *FunNode,int type);
 FN SearchFN(FN FNroot, string *id);
 union Dat *createDat(int type);
 int updateDat(union Dat *pomDat,int type,int i,double d,string *s);
@@ -97,3 +99,16 @@ int BUdelete(BU *Block, int BlockSize);
 int BlockStackInit(BlockStack *BlStack);
 int BlockStackAdd(BlockStack *BlStack,GSTable *GST,string *id);
 int BlockStackDelete(BlockStack *BlStack);
+BTree createConst(constTable *newCTable,int type,string str);
+int constTableInit(constTable *newCTable);
+BTree createConst(constTable *newCTable,int type,string str);
+int convStrToInt(string s);
+double convStrToDouble(string s);
+unionDat *getDat(constTable *newCTable,BPtr *BP,BTree *BTpom);
+int isConstOrVar(int type);
+int isInteger(int type);
+int isString(int type);
+int isDouble(int type);
+int isConstant(int type);
+int isVar(int type);
+int getType(BTree *BTpom);

@@ -43,10 +43,16 @@ return ne/uspesnost vlozeni
 funkci(FunNode), potom predas identifikator promenne a typ promenne(typ tokenu pred identifikatorem),
 potom predas hloubku zanoreni a pote predas poradi identifikatoru ve funkci (po kazdem volani teto funkce tuto hodnotu musis inkrementovat a pokud vystoupis pri analyze z uzivatelem definovane funkce tak globalni hodnotu key vynuluj)
 */
-int BTAddID(FN *FunNode,string *id, int type,int depth,int key){
+int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key){
+  int type;
+  if(vtype==KINTEGER) type=IINTEGER;
+  if(vtype==KDOUBLE) type=IDOUBLE;
+  if(vtype==KSTRING) type=ISTRING;
   BTree pomBT=(*FunNode)->BTroot;
   if(pomBT->ident==NULL){
-    pomBT->ident=id;
+    if(((pomBT->ident=malloc(sizeof (string)))==NULL)) return -1;
+    strInit(pomBT->ident);
+    strCopyString(pomBT->ident,id);
     pomBT->type=type;
     pomBT->depth=depth;
     pomBT->def=0;
@@ -62,7 +68,9 @@ int BTAddID(FN *FunNode,string *id, int type,int depth,int key){
       if(pomBT->LBT==NULL){
         BTree newBT;
         if(((newBT=malloc(sizeof (struct BT)))==NULL)) return -1;
-        newBT->ident=id;
+        if(((pomBT->ident=malloc(sizeof (string)))==NULL)) return -1;
+        strInit(pomBT->ident);
+        strCopyString(pomBT->ident,id);
         newBT->type=type;
         pomBT->depth=depth;
         pomBT->def=0;
@@ -78,7 +86,9 @@ int BTAddID(FN *FunNode,string *id, int type,int depth,int key){
       if(pomBT->RBT==NULL){
         BTree newBT;
         if(((newBT=malloc(sizeof (struct BT)))==NULL)) return -1;
-        newBT->ident=id;
+        if(((pomBT->ident=malloc(sizeof (string)))==NULL)) return -1;
+        strInit(pomBT->ident);
+        strCopyString(pomBT->ident,id);
         newBT->type=type;
         pomBT->depth=depth;
         pomBT->def=0;
@@ -94,7 +104,9 @@ int BTAddID(FN *FunNode,string *id, int type,int depth,int key){
       if(pomBT->LBT==NULL){
         BTree newBT;
         if(((newBT=malloc(sizeof (struct BT)))==NULL)) return -1;
-        newBT->ident=id;
+        if(((pomBT->ident=malloc(sizeof (string)))==NULL)) return -1;
+        strInit(pomBT->ident);
+        strCopyString(pomBT->ident,id);
         newBT->type=type;
         pomBT->depth=depth;
         pomBT->def=0;
@@ -122,7 +134,10 @@ SYN: Pokud narazis na nejakou promennou a nebude to pri deklaraci tak timto over
 vraci NULL pokud nebyla deklarovana
 */
 BTree SearchBT(FN *FunNode, string *id){
-  BTree BTroot=FunNode->BTroot;
+  return SearchGetBT((*FunNode)->BTroot,id)
+}
+//pomocna funkce pro SearchBT
+BTree SearchGetBT(BTree *BTroot,string *id){
   if(BTroot==NULL) return NULL;
   if(BTroot->ident==NULL) return NULL;
   int cmp=0;
@@ -130,18 +145,19 @@ BTree SearchBT(FN *FunNode, string *id){
     cmp=strCmpString(BTroot->ident,id);
     if(cmp==0){
       BTree pomBT2;
-      pomBT2=SearchBT(BTroot->LBT,id);
+      pomBT2=SearchGetBT(BTroot->LBT,id);
       if(pomBT2!=NULL) return pomBT2;
       else return BTroot;
     }
     else if(cmp>0){
-      return SearchBT(BTroot->RBT,id);
+      return SearchGetBT(BTroot->RBT,id);
     }
     else{
-      return SearchBT(BTroot->LBT,id);
+      return SearchGetBT(BTroot->LBT,id);
     }
   }
   else return NULL;
+
 }
 
 
@@ -171,12 +187,12 @@ int BTDelete(BTree *BTreeDisp,int depth,tempST *tmpST){
         tempSTadd(tmpST,*BTreeDisp);
       }
     }
-    
+
   }
   return 0;
 }
 
-    
+
 // inicializace zasobniku blokovych tabulek
 int BlockStackInit(BlockStack *BlStack){
   if((((*BlStack)=malloc(sizeof (struct Block_Stack)))==NULL)) return -1;
@@ -283,7 +299,7 @@ int tempST2BU(tempST tempTable,BU *newBU){
 int tempSTdelete(tempST *tempSTable){
   BTree pomBT=(*tempSTable)->First;
   while(pomBT!=NULL){
-   
+
     pomBT->RBT->LBT=pomBT;
     pomBT=pomBT->RBT;
     free(pomBT->LBT);
@@ -315,7 +331,7 @@ int GSTinit(GSTable *GST){
 @param2 identifikator funkce
 @param3 navratova hodnota funkce
 return odkaz na nove vytvorenou funkci
-*/ 
+*/
 /*
 SYN: tuto funkci zavolas, pokud dojde k deklaraci nove funkce. Predas pomocnou promennou pro ulozeni globalni
 promenne ktera obsahuje odkaz na globalni tabulku symbolu (treba GSTable GST;)
@@ -332,9 +348,9 @@ FN *GSTadd(GSTable *GST,string *id,int type){
     strInit(FunNode->ident);
     strCopyString(FunNode->ident,id);
     strInit(FunNode->type);
-    if(type==27) strAddChar(FunNode->type,'s');
-    else if(type==28) strAddChar(FunNode->type,'i');
-    else if(type==29) strAddChar(FunNode->type,'d');
+    if(type==KSTRING) strAddChar(FunNode->type,'s');
+    else if(type==KINTEGER) strAddChar(FunNode->type,'i');
+    else if(type==KDOUBLE) strAddChar(FunNode->type,'d');
     FunNode->LFN=NULL;
     FunNode->RFN=NULL;
     FunNode->def=0;
@@ -357,9 +373,9 @@ FN *GSTadd(GSTable *GST,string *id,int type){
           strInit(FunNode->ident);
           strCopyString(FunNode->ident,id);
           strInit(FunNode->type);
-          if(type==27) strAddChar(FunNode->type,'s');
-          else if(type==28) strAddChar(FunNode->type,'i');
-          else if(type==29) strAddChar(FunNode->type,'d');
+          if(type==KSTRING) strAddChar(FunNode->type,'s');
+          else if(type==KINTEGER) strAddChar(FunNode->type,'i');
+          else if(type==KDOUBLE) strAddChar(FunNode->type,'d');
           FunNode->LFN=NULL;
           FunNode->RFN=NULL;
           FunNode->def=0;
@@ -377,9 +393,9 @@ FN *GSTadd(GSTable *GST,string *id,int type){
           strInit(FunNode->ident);
           strCopyString(FunNode->ident,id);
           strInit(FunNode->type);
-          if(type==27) strAddChar(FunNode->type,'s');
-          else if(type==28) strAddChar(FunNode->type,'i');
-          else if(type==29) strAddChar(FunNode->type,'d');
+          if(type==KSTRING) strAddChar(FunNode->type,'s');
+          else if(type==KINTEGER) strAddChar(FunNode->type,'i');
+          else if(type==KDOUBLE) strAddChar(FunNode->type,'d');
           FunNode->LFN=NULL;
           FunNode->RFN=NULL;
           FunNode->def=0;
@@ -397,9 +413,9 @@ FN *GSTadd(GSTable *GST,string *id,int type){
           strInit(FunNode->ident);
           strCopyString(FunNode->ident,id);
           strInit(FunNode->type);
-          if(type==27) strAddChar(FunNode->type,'s');
-          else if(type==28) strAddChar(FunNode->type,'i');
-          else if(type==29) strAddChar(FunNode->type,'d');
+          if(type==KSTRING) strAddChar(FunNode->type,'s');
+          else if(type==KINTEGER) strAddChar(FunNode->type,'i');
+          else if(type==KDOUBLE) strAddChar(FunNode->type,'d');
           FunNode->LFN=NULL;
           FunNode->RFN=NULL;
           FunNode->def=0;
@@ -423,7 +439,9 @@ return vraci ne/uspesnost operace
 SYN: zavolas pri kazdem nacteni parametru funkce
 */
 int addFunType(FN *FunNode,int type){
-
+  if(type==KSTRING) strAddChar(FunNode->type,'s');
+  else if(type==KINTEGER) strAddChar(FunNode->type,'i');
+  else if(type==KDOUBLE) strAddChar(FunNode->type,'d');
 }
 
 
@@ -534,6 +552,27 @@ BTree constTableAdd(constTable *newCTable,int type,union Dat *data){
   return newBTree;
 }
 
+
+unionDat *getDat(constTable *newCTable,BPtr *BP,BTree *BTpom){
+  union Dat *d;
+  if(isConst((*BTpom)->type)){
+    d=(*newCTable)->BUPtr[(*BTpom)->key].data;
+    return d;
+  }
+  else if(isVar((*BTpom)->type)){
+    d=(*BP)->BUPtr[(*BTpom)->key].data;
+    return d;
+  }
+}
+
+int getType(BTree *BTpom){
+  return (*BTpom)->type;
+}
+
+
+
+
+
 //Vytvori novou konstantu a prida ji do tabulky konstant
 /*
 @param1 odkaz na tabulku konstant
@@ -545,9 +584,33 @@ return vraci odkaz na polozku v tabulce konstant
 SYN: zavolas pokud narazis na nejakou konstantu
 */
 BTree createConst(constTable *newCTable,int type,string str){
-
+  union Dat *d;// vytvoreni konstant
+  BTree newBT=NULL;
+  if(type==KINTEGER){
+    d=createDat(CINTEGER);
+    updateDat(d,CINTEGER,convStrToInt(str),0,NULL);
+    newBT=constTableAdd(newCTable,CINTEGER,d);
+  }
+  else if(type==KDOUBLE){
+    d=createDat(CDOUBLE);
+    updateDat(d,CDOUBLE,0,convStrToDouble(str),NULL);
+    newBT=constTableAdd(newCTable,CINTEGER,d);
+  }
+  else if(type==KSTRING){
+    d=createDat(CSTRING);
+    updateDat(d,CSTRING,0,0,str);
+    newBT=constTableAdd(newCTable,CINTEGER,d);
+  }
+  return newBT;
 
 }
+int convStrToInt(string s){
+  return atoi(s.str);
+}
+double convStrToDouble(string s){
+  return atof(s.str);
+}
+
 
 //----------------------------------------
 //inicializace datove polozky
@@ -625,4 +688,32 @@ int deleteDat(union Dat *pomDat,int type){
   else return -1;
   free(pomDat);
   return 0;
+}
+
+
+
+int isConstOrVar(int type){
+  if((isConstant(type))||(isVar(type))) return 0;
+  else return -1;
+}
+int isInteger(int type){
+  if((type==IINTEGER)||(type==CINTEGER)) return 0;
+  return 1;
+}
+int isString(int type){
+  if((type==ISTR)||(type==CSTR)) return 0;
+  return 1;
+}
+int isDouble(int type){
+  if((type==IDOUBLE)||(type==CDOUBLE)) return 0;
+  return 1;
+}
+
+int isConstant(int type){
+  if((type==CINTEGER)||(type==CDOUBLE)||(type==CSTR)) return 0;
+  return 1;
+}
+int isVar(int type){
+  if((type==IINTEGER)||(type==IDOUBLE)||(type==ISTR)) return 0;
+  return 1;
 }
