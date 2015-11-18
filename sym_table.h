@@ -104,7 +104,7 @@ int constTableInit(constTable *newCTable);
 BTree createConst(constTable *newCTable,int type,string str);
 int convStrToInt(string s);
 double convStrToDouble(string s);
-unionDat *getDat(constTable *newCTable,BPtr *BP,BTree *BTpom);
+union Dat *getDat(constTable *newCTable,BPtr *BP,BTree *BTpom);
 int isConstOrVar(int type);
 int isInteger(int type);
 int isString(int type);
