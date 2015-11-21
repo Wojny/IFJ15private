@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "str.c"
 #include "sym_table.h"
+#include "scaner.h"
 
 
 
@@ -47,12 +48,12 @@ int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key){
   int type;
   if(vtype==KINTEGER) type=IINTEGER;
   if(vtype==KDOUBLE) type=IDOUBLE;
-  if(vtype==KSTRING) type=ISTRING;
+  if(vtype==KSTRING) type=ISTR;
   BTree pomBT=(*FunNode)->BTroot;
   if(pomBT->ident==NULL){
-    if(((pomBT->ident=malloc(sizeof (string)))==NULL)) return -1;
-    strInit(pomBT->ident);
-    strCopyString(pomBT->ident,id);
+    if((((*FunNode)->BTroot->ident=malloc(sizeof (string)))==NULL)) return -1;
+    strInit((*FunNode)->BTroot->ident);
+    strCopyString((*FunNode)->BTroot->ident,id);
     pomBT->type=type;
     pomBT->depth=depth;
     pomBT->def=0;
@@ -68,13 +69,13 @@ int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key){
       if(pomBT->LBT==NULL){
         BTree newBT;
         if(((newBT=malloc(sizeof (struct BT)))==NULL)) return -1;
-        if(((pomBT->ident=malloc(sizeof (string)))==NULL)) return -1;
-        strInit(pomBT->ident);
-        strCopyString(pomBT->ident,id);
+        if(((newBT->ident=malloc(sizeof (string)))==NULL)) return -1;
+        strInit(newBT->ident);
+        strCopyString(newBT->ident,id);
         newBT->type=type;
-        pomBT->depth=depth;
-        pomBT->def=0;
-        pomBT->key=key;
+        newBT->depth=depth;
+        newBT->def=0;
+        newBT->key=key;
         newBT->LBT=NULL;
         newBT->RBT=NULL;
         pomBT->LBT=newBT;
@@ -86,13 +87,13 @@ int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key){
       if(pomBT->RBT==NULL){
         BTree newBT;
         if(((newBT=malloc(sizeof (struct BT)))==NULL)) return -1;
-        if(((pomBT->ident=malloc(sizeof (string)))==NULL)) return -1;
-        strInit(pomBT->ident);
-        strCopyString(pomBT->ident,id);
+        if(((newBT->ident=malloc(sizeof (string)))==NULL)) return -1;
+        strInit(newBT->ident);
+        strCopyString(newBT->ident,id);
         newBT->type=type;
-        pomBT->depth=depth;
-        pomBT->def=0;
-        pomBT->key=key;
+        newBT->depth=depth;
+        newBT->def=0;
+        newBT->key=key;
         newBT->LBT=NULL;
         newBT->RBT=NULL;
         pomBT->RBT=newBT;
@@ -104,13 +105,13 @@ int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key){
       if(pomBT->LBT==NULL){
         BTree newBT;
         if(((newBT=malloc(sizeof (struct BT)))==NULL)) return -1;
-        if(((pomBT->ident=malloc(sizeof (string)))==NULL)) return -1;
-        strInit(pomBT->ident);
-        strCopyString(pomBT->ident,id);
+        if(((newBT->ident=malloc(sizeof (string)))==NULL)) return -1;
+        strInit(newBT->ident);
+        strCopyString(newBT->ident,id);
         newBT->type=type;
-        pomBT->depth=depth;
-        pomBT->def=0;
-        pomBT->key=key;
+        newBT->depth=depth;
+        newBT->def=0;
+        newBT->key=key;
         newBT->LBT=NULL;
         newBT->RBT=NULL;
         pomBT->LBT=newBT;
@@ -120,6 +121,7 @@ int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key){
 
     }
   }
+
 }
 
 
@@ -133,11 +135,11 @@ return  vraci NULL pokud nenasel nebo polozku tabulky seznamu pokud nasel
 SYN: Pokud narazis na nejakou promennou a nebude to pri deklaraci tak timto overis zda promenna byla jiz deklarovana
 vraci NULL pokud nebyla deklarovana
 */
-BTree SearchBT(FN *FunNode, string *id){
-  return SearchGetBT((*FunNode)->BTroot,id)
+BTree SearchBT(FN FunNode, string *id){
+  return SearchGetBT(FunNode->BTroot,id);
 }
 //pomocna funkce pro SearchBT
-BTree SearchGetBT(BTree *BTroot,string *id){
+BTree SearchGetBT(BTree BTroot,string *id){
   if(BTroot==NULL) return NULL;
   if(BTroot->ident==NULL) return NULL;
   int cmp=0;
@@ -160,6 +162,28 @@ BTree SearchGetBT(BTree *BTroot,string *id){
 
 }
 
+BTree SearchBTByKey(FN FunNode, int key){
+  return SearchGetBTByKey(FunNode->BTroot,key);
+}
+
+BTree SearchGetBTByKey(BTree BTroot,int key){
+  if(BTroot==NULL) return NULL;
+  if(BTroot->key==-1) return NULL;
+  if(BTroot->key!=-1){
+    if(BTroot->key==key){
+      return BTroot;
+    }
+    else{
+      BTree pomBT=SearchGetBTByKey(BTroot->LBT,key);
+      if(pomBT==NULL) return SearchGetBTByKey(BTroot->RBT,key);
+      else return pomBT;
+    }
+
+  }
+  else return NULL;
+
+}
+
 
 //odstraneni polozek z tabulky symbolu ktere jsou jiz neplatne (rekurzivne)
 /*
@@ -176,15 +200,18 @@ a potom v teto funkci pouzijes BTDelete(FunNode->BTroot,depth,FunNode->tempSTabl
 */
 int BTDelete(BTree *BTreeDisp,int depth,tempST *tmpST){
   if((*BTreeDisp)!=NULL){ // pokud je strom neprazdny
+
     if(((*BTreeDisp)->LBT)!=NULL){ // pokud je levy podstrom neprazdny tak dojde k odstraneni leveho podstromu
       BTDelete(&((*BTreeDisp)->LBT),depth,tmpST);
+      if(((*BTreeDisp)->depth!=depth)&&((*BTreeDisp)->LBT->depth==depth)) (*BTreeDisp)->LBT=NULL;
     }
     if((*BTreeDisp)->RBT!=NULL){ // pokud je pravy podstrom neprazdny tak dojde k odstraneni praveho podstromu
       BTDelete(&((*BTreeDisp)->RBT),depth,tmpST);
+      if(((*BTreeDisp)->depth!=depth)&&((*BTreeDisp)->RBT->depth==depth)) (*BTreeDisp)->RBT=NULL;
     }
     if((*BTreeDisp)->ident!=NULL){
       if((*BTreeDisp)->depth==depth){
-        tempSTadd(tmpST,*BTreeDisp);
+        tempSTadd(tmpST,BTreeDisp);
       }
     }
 
@@ -204,7 +231,7 @@ int BlockStackInit(BlockStack *BlStack){
 @param2  globalni tabulka symbolu
 return   vraci ne/uspesnost operace pridani
 */
-int BlockStackAdd(BlockStack *BlStack,GSTable *GST){
+int BlockStackAdd(BlockStack *BlStack,GSTable *GST,string *id){
   BU *newBU;
   BPtr newBPtr;
   if(((newBPtr=malloc(sizeof (struct BlockPtr)))==NULL)) return -1;
@@ -249,18 +276,18 @@ int tempSTinit(tempST *tempTable){
 }
 
 //pridani polozky do pomocneho seznamu - vola se automaticky pri odstranovani z tabulky symbolu
-int tempSTadd(tempST *tempTable,BTree node){
+int tempSTadd(tempST *tempTable,BTree *node){
   if((*tempTable)->First==NULL){
-    node->LBT=NULL;
-    node->RBT=NULL;
-    (*tempTable)->First=node;
-    (*tempTable)->Last=node;
+    (*node)->LBT=NULL;
+    (*node)->RBT=NULL;
+    (*tempTable)->First=(*node);
+    (*tempTable)->Last=(*node);
   }
   else{
-    node->LBT=NULL;
-    node->RBT=NULL;
-    (*tempTable)->Last->RBT=node;
-    (*tempTable)->Last=node;
+    (*node)->LBT=NULL;
+    (*node)->RBT=NULL;
+    (*tempTable)->Last->RBT=(*node);
+    (*tempTable)->Last=(*node);
   }
   return 0;
 }
@@ -337,7 +364,7 @@ SYN: tuto funkci zavolas, pokud dojde k deklaraci nove funkce. Predas pomocnou p
 promenne ktera obsahuje odkaz na globalni tabulku symbolu (treba GSTable GST;)
 pote identifikator funkce a pote navratovy typ funkce
 */
-FN *GSTadd(GSTable *GST,string *id,int type){
+FN GSTadd(GSTable *GST,string *id,int type){
   FN FunNode;
   if(((FunNode=malloc(sizeof (struct FunctionNode)))==NULL)) return NULL;
 
@@ -439,9 +466,16 @@ return vraci ne/uspesnost operace
 SYN: zavolas pri kazdem nacteni parametru funkce
 */
 int addFunType(FN *FunNode,int type){
-  if(type==KSTRING) strAddChar(FunNode->type,'s');
-  else if(type==KINTEGER) strAddChar(FunNode->type,'i');
-  else if(type==KDOUBLE) strAddChar(FunNode->type,'d');
+  if(type==KSTRING) strAddChar((*FunNode)->type,'s');
+  else if(type==KINTEGER) strAddChar((*FunNode)->type,'i');
+  else if(type==KDOUBLE) strAddChar((*FunNode)->type,'d');
+}
+int getFunParamType(FN *FunNode,int num){
+  if(strGetLength((*FunNode)->type)>num){
+    return (*FunNode)->type->str[num];
+  }
+  else return -1;
+
 }
 
 
@@ -553,9 +587,9 @@ BTree constTableAdd(constTable *newCTable,int type,union Dat *data){
 }
 
 
-unionDat *getDat(constTable *newCTable,BPtr *BP,BTree *BTpom){
+union Dat *getDat(constTable *newCTable,BPtr *BP,BTree *BTpom){
   union Dat *d;
-  if(isConst((*BTpom)->type)){
+  if(isConstant((*BTpom)->type)){
     d=(*newCTable)->BUPtr[(*BTpom)->key].data;
     return d;
   }
@@ -583,7 +617,7 @@ return vraci odkaz na polozku v tabulce konstant
 /*
 SYN: zavolas pokud narazis na nejakou konstantu
 */
-BTree createConst(constTable *newCTable,int type,string str){
+BTree createConst(constTable *newCTable,int type,string *str){
   union Dat *d;// vytvoreni konstant
   BTree newBT=NULL;
   if(type==KINTEGER){
@@ -594,21 +628,21 @@ BTree createConst(constTable *newCTable,int type,string str){
   else if(type==KDOUBLE){
     d=createDat(CDOUBLE);
     updateDat(d,CDOUBLE,0,convStrToDouble(str),NULL);
-    newBT=constTableAdd(newCTable,CINTEGER,d);
+    newBT=constTableAdd(newCTable,CDOUBLE,d);
   }
   else if(type==KSTRING){
-    d=createDat(CSTRING);
-    updateDat(d,CSTRING,0,0,str);
-    newBT=constTableAdd(newCTable,CINTEGER,d);
+    d=createDat(CSTR);
+    updateDat(d,CSTR,0,0,str);
+    newBT=constTableAdd(newCTable,CSTR,d);
   }
   return newBT;
 
 }
-int convStrToInt(string s){
-  return atoi(s.str);
+int convStrToInt(string *s){
+  return atoi(s->str);
 }
-double convStrToDouble(string s){
-  return atof(s.str);
+double convStrToDouble(string *s){
+  return atof(s->str);
 }
 
 

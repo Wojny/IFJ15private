@@ -14,7 +14,7 @@
 #define KELSE     5
 #define KFOR      6
 #define KIF       7
-#define KINT      8
+#define KINTEGER  8
 #define KRETURN   9
 #define KSTRING   10
 
