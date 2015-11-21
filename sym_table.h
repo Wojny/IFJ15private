@@ -101,8 +101,14 @@ int BlockStackAdd(BlockStack *BlStack,GSTable *GST,string *id);
 int BlockStackDelete(BlockStack *BlStack);
 BTree createConst(constTable *newCTable,int type,string *str);
 int constTableInit(constTable *newCTable);
+<<<<<<< HEAD
 int convStrToInt(string *s);
 double convStrToDouble(string *s);
+=======
+BTree createConst(constTable *newCTable,int type,string str);
+int convStrToInt(string s);
+double convStrToDouble(string s);
+>>>>>>> origin/master
 union Dat *getDat(constTable *newCTable,BPtr *BP,BTree *BTpom);
 int isConstOrVar(int type);
 int isInteger(int type);
