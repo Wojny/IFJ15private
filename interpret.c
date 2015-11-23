@@ -15,6 +15,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
 {
     listFirst(L);
     tInstr *I;
+    tInstr *pomIn;
 
     *BlockStack BlStack;
     BlockStackInit(BlStack);
@@ -22,6 +23,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
     // Pomocne promenne pro pracy s daty
     union Dat *dat1, *dat2, *dat3;
     int *type1, *type2, *type3;
+    int podminka = 0;
+    int skipIf = 0;
+    int zanoreniIf = 0;
+    int podminkyIf[50];
+
+    memset(podminkyIf, -1, sizeof(podminkyIf));
 
     while(1)
     {
@@ -162,6 +169,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 // Nasobeni pouze INT or DOUBLE
                 if(((isInteger(type1) || isDouble(type1)) && (isInteger(type2) || isDouble(type2)))) {}
                 else return IFJ_ERR_INTERPRET;
+
+                // Deleni nulou
+                if((isInteger(type3) && dat3->i == 0) || (isDouble(type3) && dat3->f == 0)) else return IFJ_ERR_INTERPRET;
 
                 if(isDouble(type2))
                 {
@@ -600,7 +610,68 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             ////////////////////////////////////////
             case I_LENGHT:
                 break;
+            case I_SUBSTR:
+                break;
+            case I_CONCAT:
+                break;
+            case I_FIND:
+                break;
+            case I_SORT:
+                break;
+            ////////////////////////////////////////
+            case I_IF:
+                //if(L->active->nextItem->instr->Type == I_IF_COND)
+                podminka = 1; // vyhodnocuje se podminka
+                zanoreniIf++;
+                break;
+            case I_IF_COND:
+                podminka = 0;
+                podminkyIf[zanoreniIf] = pomIn->add1;
+                if(podminkyIf[zanoreniIf] == 0) //podminka neni splnena
+                {
+                    while(!((L->active->nextItem->instr->Type == I_END_IF) && (skipIf == 0)))
+                    {
+                        if(L->active->nextItem->instr->Type == I_IF) skipIf ++;
+                        if(L->active->nextItem->instr->Type == I_END_IF) skipIf --;
+                        listNext(L);    // preskoci instrukce, ktere se nemaji vykonat
+                    }
+                }
+                break;
+            case I_END_IF:
+                if(L->active->nextItem->instr->Type != I_ELSE) zanoreniIf--;
+                break;
+            case I_ELSE:
+                if(podminkyIf[zanoreniIf] != 0)
+                {
+                    while(!((L->active->nextItem->instr->Type == I_END_ELSE) && (skipIf == 0)))
+                    {
+                        if(L->active->nextItem->instr->Type == I_ELSE) skipIf ++;
+                        if(L->active->nextItem->instr->Type == I_END_ELSE) skipIf --;
+                        listNext(L);    // preskoci instrukce, ktere se nemaji vykonat
+                    }
+                }
+                break;
+            case I_END_ELSE:
+                zanoreniIf--;
+                break;
+            case I_FOR:
+
+                break;
+            case I_FOR_COND:
+
+                break;
+            case I_END_FOR:
+
+                break;
+
+                // Domluvit se
+            case I_READ:
+                break;
+            case I_WRITE:
+                break;
         }
+
+        if(podminka == 1) pomIn = I; //pamatujeme si predchozi ins pro podminky - zachova info pro else
 
         listNext(L);
     }

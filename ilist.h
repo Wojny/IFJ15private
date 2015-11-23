@@ -23,17 +23,23 @@
 #define I_ELSE 118
 #define I_CALL 119 //volani funkce
 #define I_RETURN 120
-#define I_WHILE 121
-#define I_END_WHILE 122
-#define I_DO 123
-#define I_END_DO 124
+//#define I_WHILE 121
+//#define I_END_WHILE 122
+//#define I_DO 123
+//#define I_END_DO 124
 #define I_FOR 125
 #define I_END_FOR 126
-#define I_FUNC 127 //deklarace funkce
-#define I_END_FUNC 128
+//#define I_FUNC 127 //deklarace funkce
+//#define I_END_FUNC 128
 #define I_MAIN 129
+#define I_END_MAIN 130
+#define I_READ 131
+#define I_WRITE 132
+#define I_IF_COND 133 //Mezi instrukcemi I_IF a I_IF_COND je vyraz, ktery se vyhodnoti jestli podminka je splnena
+#define I_END_ELSE 134
+#define I_FOR_COND 135 //obdoba IF COND - za podminkou cyklu, zacatek insrukci
 
-// 3 adresný kod
+// 3 adresny kod
 typedef struct
 {
   int Type;     //typ instrukce
@@ -45,7 +51,7 @@ typedef struct
 typedef struct itemList
 {
   tInstr instr;
-  struct Item *nextItem;
+  struct itemList *nextItem;
 } tItemList;
 
 typedef struct
