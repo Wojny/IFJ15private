@@ -8,16 +8,16 @@
 #ifndef PRECEDENCE_H
 #define PRECEDENCE_H
 
-#include <stdbool.h>
-#include <malloc.h>
+//#include <stdbool.h>
+//#include <malloc.h>
 #include <stdlib.h>
-#include <string.h>
+//#include <string.h>
 #include <stdio.h>
-#include "str.h"
-#include "ial.h"
-#include "scanner.h"
-#include "error.h"
-#include "parser.h"
+//#include "str.h"
+//#include "ial.h"
+//#include "scanner.h"
+//#include "error.h"
+//#include "parser.h"
 
 
 #define PTMORE 0	// znak '>' v precedencni tabulce
@@ -44,7 +44,7 @@ enum entries	{
 	TERMINAL,	//konecny operator (15)
 	EXPR,		//neterminal <expression> (16)	
 };
-
+/*
 typedef struct {
 	int entry;
 	tVarValue *expr;
@@ -61,5 +61,5 @@ typedef struct PointerTrash {
 	int size;
 	int top;
 }*tPointTrashPtr;
-
+*/
 #endif 

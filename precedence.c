@@ -23,10 +23,10 @@ static int rule51[3] = {LBRACE, EXPR, RBRACE};
 static int rule52[3] = {DATATYPE, 0, 0};
 
 //precedentni tabluka
-static int PTable[14][14];
+static int PTable[16][16];
 
 //inicializace precedentnej tabulky
-void PTableInit (int (*PTable)[14])
+void PTableInit (int (*PTable)[16])
 {
 	PTable[EQUAL][ADD]= PTLESS;
 	PTable[EQUAL][SUB]=	PTLESS;
@@ -127,7 +127,7 @@ void PTableInit (int (*PTable)[14])
 	PTable[TERMINAL][TERMINAL]= PTNULL;
 		
 }
-
+/*
 int GetTermType( char *value, int type)
 {
 	if (type == IDENTIFIER) return IDF;
@@ -165,3 +165,4 @@ int RuleGenerator(int *rule)
 	else  return -1;
 
 }
+*/
