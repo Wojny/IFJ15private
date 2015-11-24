@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "str.c"
-#include "sym_table.h"
-#include "scaner.h"
+//#include "str.c"
+//#include "sym_table.h"
+#include "scaner.c"
 
 
 
@@ -688,16 +688,16 @@ union Dat *createDat(int type){
 return  vraci ne/uspesnost operace
 */
 int updateDat(union Dat *pomDat,int type,int i,double d,string *s){
-  if((type==27)||(type==30)){
+  if((type==ISTR)||(type==CSTR)){
     strFree(pomDat->str);
     pomDat->str=s;
     if(((s=malloc(sizeof (string))))==NULL) return -1;
     strInit(s);
   }
-  else if((type==28)||(type==31)){
+  else if((type==IINTEGER)||(type==CINTEGER)){
     *(pomDat->i)=i;
   }
-  else if((type==29)||(type==32)){
+  else if((type==IDOUBLE)||(type==CDOUBLE)){
     *(pomDat->f)=d;
   }
   else return -1;
@@ -710,13 +710,13 @@ int updateDat(union Dat *pomDat,int type,int i,double d,string *s){
 return typ dat ulozenych v datove polozce
 */
 int deleteDat(union Dat *pomDat,int type){
-  if(type==27){
+  if((type==ISTR)||(type==CSTR)){
     strFree(pomDat->str);
   }
-  else if(type==28){
+  else if((type==IINTEGER)||(type==CINTEGER)){
     free(pomDat->i);
   }
-  else if(type==29){
+  else if((type==IDOUBLE)||(type==CDOUBLE)){
     free(pomDat->f);
   }
   else return -1;
@@ -724,7 +724,16 @@ int deleteDat(union Dat *pomDat,int type){
   return 0;
 }
 
-
+//zmeni typ promenne
+/*
+@param1 odkaz na promennou
+@param2 novy typ promenne
+return vraci ne/uspesnost operace
+*/
+int setType(BTree newBT,int newtype){
+  newBT->type=newtype;
+  return 0;
+}
 
 int isConstOrVar(int type){
   if((isConstant(type))||(isVar(type))) return 1;

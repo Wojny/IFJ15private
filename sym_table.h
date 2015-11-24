@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include "str.h"
+#include "str.c"
 
 union Dat   // data promennych a konstant
 {
@@ -113,3 +113,4 @@ int isVar(int type);
 int getType(BTree *BTpom);
 BTree SearchBTByKey(FN FunNode, int key);
 BTree SearchGetBTByKey(BTree BTroot,int key);
+int setType(BTree newBT,int newtype);
