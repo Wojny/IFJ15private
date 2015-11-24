@@ -11,7 +11,7 @@
 /* Částečně převzato z ukázkového Jednochuché interpretu - upravit a okomentovat*/
 #include "ilist.h"
 
-int CreateInst(int type, void *addr1, void *addr2, void *addr3, int Counter)
+int CreateInst(int type, void *addr1, void *addr2, void *addr3)
 {
   tInstr *newInst;
   newInst = malloc(sizeof(tInstr));
