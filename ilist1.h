@@ -54,7 +54,9 @@
 #define I_WRITE 132
 #define I_IF_COND 133 //Mezi instrukcemi I_IF a I_IF_COND je vyraz, ktery se vyhodnoti jestli podminka je splnena
 #define I_END_ELSE 134
-#define I_FOR_COND 135 //obdoba IF COND - za podminkou cyklu, zacatek insrukci
+#define I_FOR_CHCK 135 // ins kam se vracime pro vyhodnoceni vyrayu                  for(dek; HERE podm; diff)
+#define I_FOR_DIFF 136 // ins kam se vracime pro vyhodnoceni vyrayu diff po cyklu    for(dek; podm; HERE diff)
+#define I_FOR_COND 137 //obdoba IF COND - za podminkou cyklu, zacatek insrukci       for(dek; podm; diff) HERE
 
 
 // 3 adresny kod
