@@ -15,18 +15,24 @@ int interpret(tList *L, GSTable *G, constTable *CT)
 {
     listFirst(L);
     tInstr *I;
-    tInstr *pomIn;
 
-    *BlockStack BlStack;
+    tInstr *pomIn;
+    tItemList *instForChck[10];
+    tItemList *instForDiff[10];
+
+    BlockStack *BlStack;
     BlockStackInit(BlStack);
 
     // Pomocne promenne pro pracy s daty
     union Dat *dat1, *dat2, *dat3;
-    int *type1, *type2, *type3;
+    int type1, type2, type3;
     int podminka = 0;
     int skipIf = 0;
     int zanoreniIf = 0;
-    int podminkyIf[50];
+    int podminkyIf[50]; //max 49 zanoreni
+    int zanoreniFor = -1;
+    int podminkaFor = 0;
+    int diffJump = 0;
 
     memset(podminkyIf, -1, sizeof(podminkyIf));
 
@@ -36,6 +42,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
 
         switch(I->Type)
         {
+            /*
+            add1 = add2 + add3
+            */
             case I_ADD:
                 dat1 = getData(CT,BlStack->First,I->add1);
                 type1 = getType(I->add1);
@@ -79,6 +88,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 }
                 break;
 
+            /*
+            add1 = add2 - add3
+            */
             case I_SUB:
                 dat1 = getData(CT,BlStack->First,I->add1);
                 type1 = getType(I->add1);
@@ -119,6 +131,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 }
                 break;
 
+            /*
+            add1 = add2 * add3
+            */
             case I_MUL:
                 dat1 = getData(CT,BlStack->First,I->add1);
                 type1 = getType(I->add1);
@@ -158,6 +173,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 }
                 break;
 
+            /*
+            add1 = add2 / add3
+            */
             case I_DIV:
                 dat1 = getData(CT,BlStack->First,I->add1);
                 type1 = getType(I->add1);
@@ -199,6 +217,10 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     }
                 }
                 break;
+
+            /*
+            add1 = 1 pokud add2 < add3, jinak add1 = 0
+            */
 
             case I_LESS:
                 dat1 = getData(CT,BlStack->First,I->add1);
@@ -254,7 +276,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isString(type3))
                     {
-                        if(strcmp(dat2->str,dat3->str) < 0)
+                        if(strcmp(dat2->str->str,dat3->str->str) < 0)
                         {
                             dat1->i = 1;
                         }
@@ -268,6 +290,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 }
                 break;
 
+            /*
+            add1 = 1 pokud add2 > add3, jinak add1 = 0
+            */
             case I_MORE:
                 dat1 = getData(CT,BlStack->First,I->add1);
                 type1 = getType(I->add1);
@@ -322,7 +347,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isString(type3))
                     {
-                        if(strcmp(dat2->str,dat3->str) > 0)
+                        if(strcmp(dat2->str->str,dat3->str->str) > 0)
                         {
                             dat1->i = 1;
                         }
@@ -336,6 +361,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 }
                 break;
 
+            /*
+            add1 = 1 pokud add2 <= add3, jinak add1 = 0
+            */
             case I_LESSEQ:
                 dat1 = getData(CT,BlStack->First,I->add1);
                 type1 = getType(I->add1);
@@ -390,7 +418,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isString(type3))
                     {
-                        if(strcmp(dat2->str,dat3->str) <= 0)
+                        if(strcmp(dat2->str->str,dat3->str->str) <= 0)
                         {
                             dat1->i = 1;
                         }
@@ -404,6 +432,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 }
                 break;
 
+            /*
+            add1 = 1 pokud add2 >= add3, jinak add1 = 0
+            */
             case I_MOREEQ:
                 dat1 = getData(CT,BlStack->First,I->add1);
                 type1 = getType(I->add1);
@@ -458,7 +489,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isString(type3))
                     {
-                        if(strcmp(dat2->str,dat3->str) >= 0)
+                        if(strcmp(dat2->str->str,dat3->str->str) >= 0)
                         {
                             dat1->i = 1;
                         }
@@ -472,6 +503,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 }
                 break;
 
+            /*
+            add1 = 1 pokud add2 == add3, jinak add1 = 0
+            */
             case I_EQUAL:
                 dat1 = getData(CT,BlStack->First,I->add1);
                 type1 = getType(I->add1);
@@ -526,7 +560,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isString(type3))
                     {
-                        if(strcmp(dat2->str,dat3->str) == 0)
+                        if(strcmp(dat2->str->str,dat3->str->str) == 0)
                         {
                             dat1->i = 1;
                         }
@@ -540,6 +574,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 }
                 break;
 
+            /*
+            add1 = 1 pokud add2 != add3, jinak add1 = 0
+            */
             case I_NOTEQ:
                 dat1 = getData(CT,BlStack->First,I->add1);
                 type1 = getType(I->add1);
@@ -594,7 +631,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isString(type3))
                     {
-                        if(strcmp(dat2->str,dat3->str) != 0)
+                        if(strcmp(dat2->str->str,dat3->str->str) != 0)
                         {
                             dat1->i = 1;
                         }
@@ -619,16 +656,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             case I_SORT:
                 break;
             ////////////////////////////////////////
+            /*
+            null null null
+            */
             case I_IF:
-                //if(L->active->nextItem->instr->Type == I_IF_COND)
-                podminka = 1; // vyhodnocuje se podminka
                 zanoreniIf++;
                 break;
             case I_IF_COND:
-                podminka = 0;
-                podminkyIf[zanoreniIf] = pomIn->add1;
+                dat1 = getData(CT,BlStack->First,pomIn->add1);
+                podminkyIf[zanoreniIf] = dat1->i;
+
                 if(podminkyIf[zanoreniIf] == 0) //podminka neni splnena
                 {
+                    skipIf = 0;
                     while(!((L->active->nextItem->instr->Type == I_END_IF) && (skipIf == 0)))
                     {
                         if(L->active->nextItem->instr->Type == I_IF) skipIf ++;
@@ -643,6 +683,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             case I_ELSE:
                 if(podminkyIf[zanoreniIf] != 0)
                 {
+                    skipIf = 0;
                     while(!((L->active->nextItem->instr->Type == I_END_ELSE) && (skipIf == 0)))
                     {
                         if(L->active->nextItem->instr->Type == I_ELSE) skipIf ++;
@@ -655,13 +696,50 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 zanoreniIf--;
                 break;
             case I_FOR:
-
+                zanoreniFor++;
+                break;
+            case I_FOR_CHCK:
+                instForChck[zanoreniFor] = L->active;
+                break;
+            case I_FOR_DIFF:
+                instForDiff[zanoreniFor] = L->active;
+                dat1 = getData(CT,BlStack->First,pomIn->add1);
+                podminkaFor = dat1->i;
+                while(L->active->nextItem->instr->Type != I_FOR_COND)
+                {
+                    listNext(L);
+                }
                 break;
             case I_FOR_COND:
-
+                if(diffJump == 1)
+                {
+                    diffJump = 0;
+                    listGoto(L,instForChck[zanoreniFor]);
+                }
+                else
+                {
+                    if(podminkaFor == 0)
+                    {
+                        skipIf = 0;
+                        while(!((L->active->nextItem->instr->Type == I_END_FOR) && (skipIf == 0)))
+                        {
+                            if(L->active->nextItem->instr->Type == I_FOR) skipIf ++;
+                            if(L->active->nextItem->instr->Type == I_END_FOR) skipIf --;
+                            listNext(L);
+                        }
+                    }
+                }
                 break;
             case I_END_FOR:
-
+                if(podminkaFor != 0)
+                {
+                    diffJump = 1;
+                    listGoto(L,instForDiff[zanoreniFor]);
+                }
+                else
+                {
+                    zanoreniFor--;
+                }
                 break;
 
                 // Domluvit se
@@ -671,7 +749,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 break;
         }
 
-        if(podminka == 1) pomIn = I; //pamatujeme si predchozi ins pro podminky - zachova info pro else
+        pomIn = I; //pamatujeme si predchozi ins pro podminky - zachova info pro else
 
         listNext(L);
     }
