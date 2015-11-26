@@ -742,10 +742,55 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 }
                 break;
 
-                // Domluvit se
+            /*
+            add1    adresa promenne kam se ma ulozit nactena hodnota
+            */
             case I_READ:
+                dat1 = getData(CT,BlStack->First,I->add1);
+                type1 = getType(I->add1);
+
+                if(isInteger(type1))
+                {
+                    scanf("%i",&dat1->i);
+                }
+                else if(isDouble(type1))
+                {
+                    scanf("%g",&dat1->f);
+                }
+                else if(isString(type1))
+                {
+                    strClear(dat1->str);
+                    while((inChar = getchar()) != EOF)
+                    {
+                        if(strAddChar(dat1->str, inChar) != STR_SUCCESS)
+                        {
+                          return IFJ_ERR_INTERPRET;
+                        }
+                    }
+                }
+                else return IFJ_ERR_INTERPRET;
                 break;
+
+            /*
+            add1    adresa promenne odkud se vypisuje hodnota
+            */
             case I_WRITE:
+                dat1 = getData(CT,BlStack->First,I->add1);
+                type1 = getType(I->add1);
+
+                if(isInteger(type1))
+                {
+                    printf("%i",dat1->i);
+                }
+                else if(isDouble(type1))
+                {
+                    printf("%g",dat1->f);
+                }
+                else if(isString(type1))
+                {
+                    strPrint(dat1->str);
+                }
+                else return IFJ_ERR_INTERPRET;
                 break;
         }
 
