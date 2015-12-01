@@ -1,16 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+//#include <string.h>
 #include <stdbool.h>
 //#include "interpret.h"
 #include "ilist.h"
 #include "sym_table.h"
-#include "scaner.h"
+#include "sym_table.c"
+//#include "scaner.h"
 #include "errors.h"
 //#include "str.h"
 
 int interpret(tList *L, GSTable *G, constTable *CT)
 {
+    //*G->FunRoot + string funkce,
     listFirst(L);
     tInstr *I;
     tInstr *nextI;
@@ -34,6 +36,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
 
     BlockStackInit(&BlStack);
     BlockStackAdd(&BlStack,G,NULL); //NULL??
+
     memset(podminkyIf, -1, sizeof(podminkyIf));
 
     while(1)
@@ -646,12 +649,40 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     return IFJ_ERR_INTERPRET;
                 }
                 break;
-            ////////////////////////////////////////
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            /*
+
+            */
             case I_LENGHT:
+                dat1 = getDat(CT,&BlStack->First,I->add1);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
+
+                *dat3->i = 0;
+
+               for(int i=0;dat1->str->str!='\0';i++)
+                {
+                  if (dat1->str->str >= 'A' && dat1->str->str <= 'Z')
+                     *dat3->i++;
+                  if (dat1->str->str >= 'a' && dat1->str->str <= 'z')
+                     *dat3->i++;
+                  if (dat1->str->str >= '0' && dat1->str->str <= '9')
+                     *dat3->i++;
+                }
                 break;
             case I_SUBSTR:
                 break;
             case I_CONCAT:
+                dat1 = getDat(CT,&BlStack->First,I->add1);
+                type1 = getType(I->add1);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
+                type2 = getType(I->add2);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
+                type3 = getType(I->add3);
+
+                dat3->str->length = dat1->str->length + dat2->str->length;
+                // alokace
+
+                concat(dat1->str->str,dat2->str->str,dat3->str->str);
                 break;
             case I_FIND:
                 break;
@@ -808,4 +839,33 @@ int interpret(tList *L, GSTable *G, constTable *CT)
 
         listNext(L);
     }
+}
+
+void concat(char * s1,char * s2,char * vysledok)
+{
+int l1,l2;
+l1=strlen(s1);
+l2=strlen(s2);
+l1=l1+l2;
+
+while (l1>UCHAR_MAX)
+{
+    printf("Pridlhy retazec");
+    return 0;
+}
+    while(*s1)
+   {
+      *vysledok = *s1;
+      vysledok++;
+      s1++;
+   }
+
+   while(*s2)
+   {
+      *vysledok = *s2;
+      vysledok++;
+      s2++;
+   }
+   *vysledok = '\0';
+   s1--;
 }
