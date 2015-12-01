@@ -378,6 +378,7 @@ FN GSTadd(GSTable *GST,string *id,int type){
     if(type==KSTRING) strAddChar(FunNode->type,'s');
     else if(type==KINTEGER) strAddChar(FunNode->type,'i');
     else if(type==KDOUBLE) strAddChar(FunNode->type,'d');
+    FunNode->instr=NULL;
     FunNode->LFN=NULL;
     FunNode->RFN=NULL;
     FunNode->def=0;
@@ -403,6 +404,7 @@ FN GSTadd(GSTable *GST,string *id,int type){
           if(type==KSTRING) strAddChar(FunNode->type,'s');
           else if(type==KINTEGER) strAddChar(FunNode->type,'i');
           else if(type==KDOUBLE) strAddChar(FunNode->type,'d');
+          FunNode->instr=NULL;
           FunNode->LFN=NULL;
           FunNode->RFN=NULL;
           FunNode->def=0;
@@ -423,6 +425,7 @@ FN GSTadd(GSTable *GST,string *id,int type){
           if(type==KSTRING) strAddChar(FunNode->type,'s');
           else if(type==KINTEGER) strAddChar(FunNode->type,'i');
           else if(type==KDOUBLE) strAddChar(FunNode->type,'d');
+          FunNode->instr=NULL;
           FunNode->LFN=NULL;
           FunNode->RFN=NULL;
           FunNode->def=0;
@@ -443,6 +446,7 @@ FN GSTadd(GSTable *GST,string *id,int type){
           if(type==KSTRING) strAddChar(FunNode->type,'s');
           else if(type==KINTEGER) strAddChar(FunNode->type,'i');
           else if(type==KDOUBLE) strAddChar(FunNode->type,'d');
+          FunNode->instr=NULL;
           FunNode->LFN=NULL;
           FunNode->RFN=NULL;
           FunNode->def=0;
@@ -454,6 +458,15 @@ FN GSTadd(GSTable *GST,string *id,int type){
       }
     }
   }
+}
+
+
+void addFunInst(FN *FunNode,tItemList *instr){
+  (*FunNode)->instr=instr;
+}
+
+tItemList *getFunInst(FN *FunNode){
+  return (*FunNode)->instr;
 }
 
 //pridani typu parametru funkce do aktualne zpracovane funkce
@@ -513,6 +526,103 @@ FN SearchFN(FN FNroot, string *id){
 
 
 }
+// vraci definovanou funkci podle jmena
+FN SearchDefinedFN(FN FNroot, string *id){
+  FN pomFN=FNroot;
+  if(FNroot==NULL) return NULL;
+  if(pomFN->ident==NULL) return NULL;
+  int cmp=0;
+  if(pomFN->ident!=NULL){
+    cmp=strCmpString(pomFN->ident,id);
+    if(cmp==0){
+      if(pomFN->def==1) return pomFN;
+      else return SearchFN(pomFN->LFN,id);
+    }
+    else if(cmp>0){
+      return SearchFN(pomFN->RFN,id);
+    }
+    else{
+      return SearchFN(pomFN->LFN,id);
+    }
+  }
+  else return NULL;
+
+
+}
+
+// kontrola vicero definici jedne funkce
+// pri vicero definici vraci 1 jinak 0
+int defined;
+int isMultipleDefinedFun(GSTable GST, FN pomFNvzor){
+  defined=0;
+  return isMultipleDefinedFN(GST->FunRoot,pomFNvzor);
+}
+int isMultipleDefinedFN(FN pomFN, FN pomFNvzor){
+  if(pomFN==NULL) return 0;
+  if(pomFN->ident==NULL) return 0;
+  int cmp=0;
+  if(pomFN->ident!=NULL){
+    cmp=strCmpString(pomFN->ident,pomFNvzor->ident);
+    if(cmp==0){
+      if((defined==1)&&(pomFN->def==1)) return 1;
+      if(pomFN->def==1) defined=1;
+      return isMultipleDefinedFN(pomFN->LFN,pomFNvzor);
+    }
+    else if(cmp>0){
+      return isMultipleDefinedFN(pomFN->RFN,pomFNvzor);
+    }
+    else{
+      return isMultipleDefinedFN(pomFN->LFN,pomFNvzor);
+    }
+  }
+  else return 0;
+
+
+}
+
+// kontrola shodnosti parametru nove funkce a ostatnich definovanych/deklarovanych
+// pri shode vraci 1 jinak 0
+int isParamEqual(GSTable GST, FN pomFNvzor){
+  return isParamEqualFN(GST->FunRoot,pomFNvzor);
+}
+int isParamEqualFN(FN pomFN, FN pomFNvzor){
+  if(pomFN==NULL) return 1;
+  if(pomFN->ident==NULL) return 1;
+  int cmp=0;
+  if(pomFN->ident!=NULL){
+    cmp=strCmpString(pomFN->ident,pomFNvzor->ident);
+    if(cmp==0){
+      int cmp2=strCmpString(pomFN->type,pomFNvzor->type);
+      if(cmp2!=0) return 0;
+      cmp2=checkFunParams(pomFN,pomFNvzor);
+      if(cmp2!=0) return 0;
+      return isParamEqualFN(pomFN->LFN,pomFNvzor);
+    }
+    else if(cmp>0){
+      return isParamEqualFN(pomFN->RFN,pomFNvzor);
+    }
+    else{
+      return isParamEqualFN(pomFN->LFN,pomFNvzor);
+    }
+  }
+  else return 0;
+}
+// kontrola parametru funkce
+int checkFunParams(FN pomFN,FN pomFNvzor){
+  int len=strGetLength(pomFN->type);
+  int i;
+  BTree pomBT;
+  BTree pomBT2;
+  for(i=1;i<=len;i++){
+    pomBT=SearchBTByKey(pomFN, i);
+    if(pomBT==NULL) return -1;
+    pomBT2=SearchBT(pomFNvzor, pomBT->ident);
+    if(pomBT2==NULL) return -1;
+    if(pomBT->key!=pomBT2->key) return -1;
+  }
+  return 0;
+}
+
 
 //odstraneni funkci z tabulky symbolu (rekurzivne)
 /*
@@ -654,7 +764,7 @@ return odkaz na nova data
 */
 union Dat *createDat(int type){
   union Dat *pomDat;
-  if((type==27)||(type==30)){
+  if((type==ISTR)||(type==CSTR)){
     if(((pomDat=malloc(sizeof (union Dat)))==NULL)) return NULL;
     string *s;
     if(((s=malloc(sizeof (string))))==NULL) return NULL;
@@ -662,13 +772,13 @@ union Dat *createDat(int type){
     pomDat->str=s;
 
   }
-  else if((type==28)||(type==31)){
+  else if((type==IINTEGER)||(type==CINTEGER)){
     int *pomI;
     if(((pomI=malloc(sizeof (int)))==NULL)) return NULL;
     if(((pomDat=malloc(sizeof (union Dat)))==NULL)) return NULL;
     pomDat->i=pomI;
   }
-  else if((type==29)||(type==32)){
+  else if((type==IDOUBLE)||(type==CDOUBLE)){
     double *pomD;
     if(((pomD=malloc(sizeof (double)))==NULL)) return NULL;
     if(((pomDat=malloc(sizeof (union Dat)))==NULL)) return NULL;

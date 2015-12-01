@@ -57,6 +57,7 @@ typedef struct FunctionNode{
   BTree BTroot;   // odkaz na tabulku symbolu
   int BlockSize;  // pocet promennych ve funkci
   tempST tempSTable;  // odkaz na pomocny seznam neplatnych promennych ve funkci
+  tItemList *instr;
   struct FunctionNode *LFN;  // levy podstrom
   struct FunctionNode *RFN;  // pravy podstrom
 
@@ -114,3 +115,11 @@ int getType(BTree *BTpom);
 BTree SearchBTByKey(FN FunNode, int key);
 BTree SearchGetBTByKey(BTree BTroot,int key);
 int setType(BTree newBT,int newtype);
+void addFunInst(FN *FunNode,tItemList *instr);
+tItemList *getFunInst(FN *FunNode);
+FN SearchDefinedFN(FN FNroot, string *id);
+int isMultipleDefinedFun(GSTable GST, FN pomFNvzor);
+int isMultipleDefinedFN(FN pomFN, FN pomFNvzor);
+int isParamEqual(GSTable GST, FN pomFNvzor);
+int isParamEqualFN(FN pomFN, FN pomFNvzor);
+int checkFunParams(FN pomFN,FN pomFNvzor);

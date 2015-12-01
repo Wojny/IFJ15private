@@ -5,6 +5,7 @@
 //-------------------------------------------------------
 //#include "scaner.h"
 // inicializace pomocneho zasobniku
+int parenth=0;
 int initSTStack(sTreeStack *STST){
   if((((*STST)=malloc(sizeof (struct SynTreeStack)))==NULL)) return -1;
   (*STST)->First=NULL;
@@ -83,6 +84,7 @@ union Dat *getData(constTable newCTable,int key){
 return vraci koren syntaktickeho stromu
 */
 sTree syn_exp(int inittype,string *inits,FN newFN,constTable newCTable){
+  parenth=0;
   PTableInit (PTable);
   sTreeStack STST;
   initSTStack(&STST);
@@ -98,6 +100,7 @@ sTree syn_exp(int inittype,string *inits,FN newFN,constTable newCTable){
     act=createSTree(newBT2,0,inittype);
   }
   else{
+    if(inittype==LPARENTH) parenth++;
     act=createSTree(NULL,0,inittype);
   }
 
@@ -120,6 +123,8 @@ sTree syn_exp(int inittype,string *inits,FN newFN,constTable newCTable){
         act=createSTree(newBT2,0,type);
       }
       else{
+        if(type==LPARENTH) parenth++;
+        if(type==RPARENTH) parenth--;
         act=createSTree(NULL,0,type);
       }
 
@@ -139,6 +144,8 @@ sTree syn_exp(int inittype,string *inits,FN newFN,constTable newCTable){
         act=createSTree(newBT2,0,type);
       }
       else{
+        if(type==LPARENTH) parenth++;
+        if(type==RPARENTH) parenth--;
         act=createSTree(NULL,0,type);
       }
     }
@@ -159,7 +166,7 @@ int comp(sTreeStack STST,sTree ST0){
   sTree STpom=STST->First;
   int i;
   while(STpom->isE!=0) STpom=STpom->nxt;
-  if((STpom->stype==SEMICOLON)&&(ST0->stype==SEMICOLON)) return STEND;
+  if(((STpom->stype==SEMICOLON)&&(ST0->stype==SEMICOLON))||((STpom->stype==SEMICOLON)&&(ST0->stype==RPARENTH)&&(parenth<0))) return STEND;
   i=PTable[convConstTypes(STpom->stype)][convConstTypes(ST0->stype)];
   return i;
 }
