@@ -65,3 +65,13 @@ tInstr *listGetData(tList *L)
   }
   else return &(L->active->instr);
 }
+
+tInstr *listGetNextData(tList *L)
+{
+  if (L->active == NULL)
+  {
+    printf("Chyba, zadna instrukce neni aktivni");
+    return NULL;
+  }
+  else return &(L->active->nextItem->instr);
+}

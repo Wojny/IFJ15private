@@ -2,43 +2,44 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <string.h>
 //#include "interpret.h"
 #include "ilist.h"
 #include "sym_table.h"
 #include "scaner.h"
 #include "errors.h"
-#include "str.h"
-
+//#include "str.h"
 
 int interpret(tList *L, GSTable *G, constTable *CT)
 {
     listFirst(L);
     tInstr *I;
+    tInstr *nextI;
 
     tInstr *pomIn;
     tItemList *instForChck[10];
     tItemList *instForDiff[10];
 
-    BlockStack *BlStack;
-    BlockStackInit(BlStack);
+    BlockStack BlStack;
 
     // Pomocne promenne pro pracy s daty
     union Dat *dat1, *dat2, *dat3;
     int type1, type2, type3;
-    int podminka = 0;
     int skipIf = 0;
     int zanoreniIf = 0;
     int podminkyIf[50]; //max 49 zanoreni
     int zanoreniFor = -1;
     int podminkaFor = 0;
     int diffJump = 0;
+    char inChar;
 
+    BlockStackInit(&BlStack);
+    BlockStackAdd(&BlStack,G,NULL); //NULL??
     memset(podminkyIf, -1, sizeof(podminkyIf));
 
     while(1)
     {
         I = listGetData(L);
+        nextI = listGetNextData(L);
 
         switch(I->Type)
         {
@@ -46,11 +47,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = add2 + add3
             */
             case I_ADD:
-                dat1 = getData(CT,BlStack->First,I->add1);
+                dat1 = getDat(CT,&BlStack->First,I->add1);
                 type1 = getType(I->add1);
-                dat2 = getData(CT,BlStack->First,I->add2);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
                 type2 = getType(I->add2);
-                dat3 = getData(CT,BlStack->First,I->add3);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
                 // Scitani pouze INT or DOUBLE
@@ -64,13 +65,14 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 if(isDouble(type2))
                 {
                     type1 = IDOUBLE;
+                    //setType(I->add1,IDOUBLE);
                     if(isDouble(type3))
                     {
-                        dat1->f = dat2->f + dat3->f;
+                        *dat1->f =  *dat2->f + *dat3->f;
                     }
                     else
                     {
-                        dat1->f = dat2->f + (double *)dat3->i;
+                        *dat1->f = *dat2->f + *(double *)dat3->i;
                     }
                 }
                 else
@@ -78,12 +80,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     if(isDouble(type3))
                     {
                         type1 = IDOUBLE;
-                        dat1->f = (double *)dat2->i + dat3->f;
+                        *dat1->f = *(double *)dat2->i + *dat3->f;
                     }
                     else
                     {
                         type1 = IINTEGER;
-                        dat1->i = dat2->i + dat3->i;
+                        *dat1->i = *dat2->i + *dat3->i;
                     }
                 }
                 break;
@@ -92,11 +94,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = add2 - add3
             */
             case I_SUB:
-                dat1 = getData(CT,BlStack->First,I->add1);
+                dat1 = getDat(CT,&BlStack->First,I->add1);
                 type1 = getType(I->add1);
-                dat2 = getData(CT,BlStack->First,I->add2);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
                 type2 = getType(I->add2);
-                dat3 = getData(CT,BlStack->First,I->add3);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
                 // Odcitani pouze INT or DOUBLE
@@ -109,11 +111,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     type1 = IDOUBLE;
                     if(isDouble(type3))
                     {
-                        dat1->f = dat2->f - dat3->f;
+                        *dat1->f = *dat2->f - *dat3->f;
                     }
                     else
                     {
-                        dat1->f = dat2->f - (double *)dat3->i;
+                        *dat1->f = *dat2->f - *(double *)dat3->i;
                     }
                 }
                 else
@@ -121,12 +123,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     if(isDouble(type3))
                     {
                         type1 = IDOUBLE;
-                        dat1->f = (double *)dat2->i - dat3->f;
+                        *dat1->f = *(double *)dat2->i - *dat3->f;
                     }
                     else
                     {
                         type1 = IINTEGER;
-                        dat1->i = dat2->i - dat3->i;
+                        *dat1->i = *dat2->i - *dat3->i;
                     }
                 }
                 break;
@@ -135,11 +137,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = add2 * add3
             */
             case I_MUL:
-                dat1 = getData(CT,BlStack->First,I->add1);
+                dat1 = getDat(CT,&BlStack->First,I->add1);
                 type1 = getType(I->add1);
-                dat2 = getData(CT,BlStack->First,I->add2);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
                 type2 = getType(I->add2);
-                dat3 = getData(CT,BlStack->First,I->add3);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
                 // Nasobeni pouze INT or DOUBLE
@@ -151,11 +153,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     type1 = IDOUBLE;
                     if(isDouble(type3))
                     {
-                        dat1->f = dat2->f * dat3->f;
+                        *dat1->f = *dat2->f * *dat3->f;
                     }
                     else
                     {
-                        dat1->f = dat2->f * (double *)dat3->i;
+                        *dat1->f = *dat2->f * *(double *)dat3->i;
                     }
                 }
                 else
@@ -163,12 +165,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     if(isDouble(type3))
                     {
                         type1 = IDOUBLE;
-                        dat1->f = (double *)dat2->i * dat3->f;
+                        *dat1->f = *(double *)dat2->i * *dat3->f;
                     }
                     else
                     {
                         type1 = IINTEGER;
-                        dat1->i = dat2->i * dat3->i;
+                        *dat1->i = *dat2->i * *dat3->i;
                     }
                 }
                 break;
@@ -177,11 +179,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = add2 / add3
             */
             case I_DIV:
-                dat1 = getData(CT,BlStack->First,I->add1);
+                dat1 = getDat(CT,&BlStack->First,I->add1);
                 type1 = getType(I->add1);
-                dat2 = getData(CT,BlStack->First,I->add2);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
                 type2 = getType(I->add2);
-                dat3 = getData(CT,BlStack->First,I->add3);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
                 // Nasobeni pouze INT or DOUBLE
@@ -189,18 +191,18 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 else return IFJ_ERR_INTERPRET;
 
                 // Deleni nulou
-                if((isInteger(type3) && dat3->i == 0) || (isDouble(type3) && dat3->f == 0)) else return IFJ_ERR_INTERPRET;
+                if((isInteger(type3) && dat3->i == 0) || (isDouble(type3) && dat3->f == 0)) return IFJ_ERR_INTERPRET;
 
                 if(isDouble(type2))
                 {
                     type1 = IDOUBLE;
                     if(isDouble(type3))
                     {
-                        dat1->f = dat2->f / dat3->f;
+                        *dat1->f = *dat2->f / *dat3->f;
                     }
                     else
                     {
-                        dat1->f = dat2->f / (double *)dat3->i;
+                        *dat1->f = *dat2->f / *(double *)dat3->i;
                     }
                 }
                 else
@@ -208,12 +210,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     if(isDouble(type3))
                     {
                         type1 = IDOUBLE;
-                        dat1->f = (double *)dat2->i / dat3->f;
+                        *dat1->f = *(double *)dat2->i / *dat3->f;
                     }
                     else
                     {
                         type1 = IINTEGER;
-                        dat1->i = dat2->i / dat3->i;
+                        *dat1->i = *dat2->i / *dat3->i;
                     }
                 }
                 break;
@@ -223,11 +225,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             */
 
             case I_LESS:
-                dat1 = getData(CT,BlStack->First,I->add1);
+                dat1 = getDat(CT,&BlStack->First,I->add1);
                 type1 = getType(I->add1);
-                dat2 = getData(CT,BlStack->First,I->add2);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
                 type2 = getType(I->add2);
-                dat3 = getData(CT,BlStack->First,I->add3);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
                 type1 = IINTEGER;
@@ -236,19 +238,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type3))
                     {
-                        if(dat2->i < dat3->i)
+                        if(*dat2->i < *dat3->i)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else if(isDouble(type3))
                     {
-                        if((double *)dat2->i < dat3->f)
+                        if(*(double *)dat2->i < *dat3->f)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -256,19 +258,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type3))
                     {
-                        if(dat2->f < (double *)dat3->i)
+                        if(*dat2->f < *(double *)dat3->i)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else if(isDouble(type3))
                     {
-                        if(dat2->f < dat3->f)
+                        if(*dat2->f < *dat3->f)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -278,9 +280,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     {
                         if(strcmp(dat2->str->str,dat3->str->str) < 0)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -294,11 +296,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = 1 pokud add2 > add3, jinak add1 = 0
             */
             case I_MORE:
-                dat1 = getData(CT,BlStack->First,I->add1);
+                dat1 = getDat(CT,&BlStack->First,I->add1);
                 type1 = getType(I->add1);
-                dat2 = getData(CT,BlStack->First,I->add2);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
                 type2 = getType(I->add2);
-                dat3 = getData(CT,BlStack->First,I->add3);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
                 type1 = IINTEGER;
@@ -307,19 +309,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type3))
                     {
-                        if(dat2->i > dat3->i)
+                        if(*dat2->i > *dat3->i)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else if(isDouble(type3))
                     {
-                        if((double *)dat2->i > dat3->f)
+                        if(*(double *)dat2->i > *dat3->f)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -327,19 +329,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type3))
                     {
-                        if(dat2->f > (double *)dat3->i)
+                        if(*dat2->f > *(double *)dat3->i)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else if(isDouble(type3))
                     {
-                        if(dat2->f > dat3->f)
+                        if(*dat2->f > *dat3->f)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -349,9 +351,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     {
                         if(strcmp(dat2->str->str,dat3->str->str) > 0)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -365,11 +367,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = 1 pokud add2 <= add3, jinak add1 = 0
             */
             case I_LESSEQ:
-                dat1 = getData(CT,BlStack->First,I->add1);
+                dat1 = getDat(CT,&BlStack->First,I->add1);
                 type1 = getType(I->add1);
-                dat2 = getData(CT,BlStack->First,I->add2);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
                 type2 = getType(I->add2);
-                dat3 = getData(CT,BlStack->First,I->add3);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
                 type1 = IINTEGER;
@@ -378,19 +380,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type3))
                     {
-                        if(dat2->i <= dat3->i)
+                        if(*dat2->i <= *dat3->i)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else if(isDouble(type3))
                     {
-                        if((double *)dat2->i <= dat3->f)
+                        if(*(double *)dat2->i <= *dat3->f)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -398,19 +400,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type3))
                     {
-                        if(dat2->f <= (double *)dat3->i)
+                        if(*dat2->f <= *(double *)dat3->i)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else if(isDouble(type3))
                     {
-                        if(dat2->f <= dat3->f)
+                        if(*dat2->f <= *dat3->f)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -420,9 +422,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     {
                         if(strcmp(dat2->str->str,dat3->str->str) <= 0)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -436,11 +438,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = 1 pokud add2 >= add3, jinak add1 = 0
             */
             case I_MOREEQ:
-                dat1 = getData(CT,BlStack->First,I->add1);
+                dat1 = getDat(CT,&BlStack->First,I->add1);
                 type1 = getType(I->add1);
-                dat2 = getData(CT,BlStack->First,I->add2);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
                 type2 = getType(I->add2);
-                dat3 = getData(CT,BlStack->First,I->add3);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
                 type1 = IINTEGER;
@@ -449,19 +451,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type3))
                     {
-                        if(dat2->i >= dat3->i)
+                        if(*dat2->i >= *dat3->i)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else if(isDouble(type3))
                     {
-                        if((double *)dat2->i >= dat3->f)
+                        if(*(double *)dat2->i >= *dat3->f)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -469,19 +471,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type3))
                     {
-                        if(dat2->f >= (double *)dat3->i)
+                        if(*dat2->f >= *(double *)dat3->i)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else if(isDouble(type3))
                     {
-                        if(dat2->f >= dat3->f)
+                        if(*dat2->f >= *dat3->f)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -491,9 +493,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     {
                         if(strcmp(dat2->str->str,dat3->str->str) >= 0)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -507,11 +509,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = 1 pokud add2 == add3, jinak add1 = 0
             */
             case I_EQUAL:
-                dat1 = getData(CT,BlStack->First,I->add1);
+                dat1 = getDat(CT,&BlStack->First,I->add1);
                 type1 = getType(I->add1);
-                dat2 = getData(CT,BlStack->First,I->add2);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
                 type2 = getType(I->add2);
-                dat3 = getData(CT,BlStack->First,I->add3);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
                 type1 = IINTEGER;
@@ -520,19 +522,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type3))
                     {
-                        if(dat2->i == dat3->i)
+                        if(*dat2->i == *dat3->i)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else if(isDouble(type3))
                     {
-                        if((double *)dat2->i == dat3->f)
+                        if(*(double *)dat2->i == *dat3->f)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -540,19 +542,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type3))
                     {
-                        if(dat2->f == (double *)dat3->i)
+                        if(*dat2->f == *(double *)dat3->i)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else if(isDouble(type3))
                     {
-                        if(dat2->f == dat3->f)
+                        if(*dat2->f == *dat3->f)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -562,9 +564,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     {
                         if(strcmp(dat2->str->str,dat3->str->str) == 0)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -578,11 +580,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = 1 pokud add2 != add3, jinak add1 = 0
             */
             case I_NOTEQ:
-                dat1 = getData(CT,BlStack->First,I->add1);
+                dat1 = getDat(CT,&BlStack->First,I->add1);
                 type1 = getType(I->add1);
-                dat2 = getData(CT,BlStack->First,I->add2);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
                 type2 = getType(I->add2);
-                dat3 = getData(CT,BlStack->First,I->add3);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
                 type1 = IINTEGER;
@@ -591,19 +593,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type3))
                     {
-                        if(dat2->i != dat3->i)
+                        if(*dat2->i != *dat3->i)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else if(isDouble(type3))
                     {
-                        if((double *)dat2->i != dat3->f)
+                        if(*(double *)dat2->i != *dat3->f)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -611,19 +613,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type3))
                     {
-                        if(dat2->f != (double *)dat3->i)
+                        if(*dat2->f != *(double *)dat3->i)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else if(isDouble(type3))
                     {
-                        if(dat2->f != dat3->f)
+                        if(*dat2->f != *dat3->f)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -633,9 +635,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     {
                         if(strcmp(dat2->str->str,dat3->str->str) != 0)
                         {
-                            dat1->i = 1;
+                            *dat1->i = 1;
                         }
-                        else dat1->i = 0;
+                        else *dat1->i = 0;
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
@@ -663,32 +665,36 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 zanoreniIf++;
                 break;
             case I_IF_COND:
-                dat1 = getData(CT,BlStack->First,pomIn->add1);
-                podminkyIf[zanoreniIf] = dat1->i;
+                dat1 = getDat(CT,&BlStack->First,pomIn->add1);
+                podminkyIf[zanoreniIf] = *dat1->i;
 
                 if(podminkyIf[zanoreniIf] == 0) //podminka neni splnena
                 {
                     skipIf = 0;
-                    while(!((L->active->nextItem->instr->Type == I_END_IF) && (skipIf == 0)))
+                    while(!((nextI->Type == I_END_IF) && (skipIf == 0)))
                     {
-                        if(L->active->nextItem->instr->Type == I_IF) skipIf ++;
-                        if(L->active->nextItem->instr->Type == I_END_IF) skipIf --;
+                        if(nextI->Type == I_IF) skipIf ++;
+                        if(nextI->Type == I_END_IF) skipIf --;
                         listNext(L);    // preskoci instrukce, ktere se nemaji vykonat
+                        I = listGetData(L);
+                        nextI = listGetNextData(L);
                     }
                 }
                 break;
             case I_END_IF:
-                if(L->active->nextItem->instr->Type != I_ELSE) zanoreniIf--;
+                if(nextI->Type != I_ELSE) zanoreniIf--;
                 break;
             case I_ELSE:
                 if(podminkyIf[zanoreniIf] != 0)
                 {
                     skipIf = 0;
-                    while(!((L->active->nextItem->instr->Type == I_END_ELSE) && (skipIf == 0)))
+                    while(!((nextI->Type == I_END_ELSE) && (skipIf == 0)))
                     {
-                        if(L->active->nextItem->instr->Type == I_ELSE) skipIf ++;
-                        if(L->active->nextItem->instr->Type == I_END_ELSE) skipIf --;
+                        if(nextI->Type == I_ELSE) skipIf ++;
+                        if(nextI->Type == I_END_ELSE) skipIf --;
                         listNext(L);    // preskoci instrukce, ktere se nemaji vykonat
+                        I = listGetData(L);
+                        nextI = listGetNextData(L);
                     }
                 }
                 break;
@@ -703,11 +709,13 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 break;
             case I_FOR_DIFF:
                 instForDiff[zanoreniFor] = L->active;
-                dat1 = getData(CT,BlStack->First,pomIn->add1);
-                podminkaFor = dat1->i;
-                while(L->active->nextItem->instr->Type != I_FOR_COND)
+                dat1 = getDat(CT,&BlStack->First,pomIn->add1);
+                podminkaFor = *dat1->i;
+                while(nextI->Type != I_FOR_COND)
                 {
                     listNext(L);
+                    I = listGetData(L);
+                    nextI = listGetNextData(L);
                 }
                 break;
             case I_FOR_COND:
@@ -721,11 +729,13 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     if(podminkaFor == 0)
                     {
                         skipIf = 0;
-                        while(!((L->active->nextItem->instr->Type == I_END_FOR) && (skipIf == 0)))
+                        while(!((nextI->Type == I_END_FOR) && (skipIf == 0)))
                         {
-                            if(L->active->nextItem->instr->Type == I_FOR) skipIf ++;
-                            if(L->active->nextItem->instr->Type == I_END_FOR) skipIf --;
+                            if(nextI->Type == I_FOR) skipIf ++;
+                            if(nextI->Type == I_END_FOR) skipIf --;
                             listNext(L);
+                            I = listGetData(L);
+                            nextI = listGetNextData(L);
                         }
                     }
                 }
@@ -746,23 +756,23 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1    adresa promenne kam se ma ulozit nactena hodnota
             */
             case I_READ:
-                dat1 = getData(CT,BlStack->First,I->add1);
+                dat1 = getDat(CT,&BlStack->First,I->add1);
                 type1 = getType(I->add1);
 
                 if(isInteger(type1))
                 {
-                    scanf("%i",&dat1->i);
+                    scanf("%i",dat1->i);
                 }
                 else if(isDouble(type1))
                 {
-                    scanf("%g",&dat1->f);
+                    scanf("%g",dat1->f);
                 }
                 else if(isString(type1))
                 {
                     strClear(dat1->str);
                     while((inChar = getchar()) != EOF)
                     {
-                        if(strAddChar(dat1->str, inChar) != STR_SUCCESS)
+                        if(strAddChar(dat1->str, inChar) != 0)
                         {
                           return IFJ_ERR_INTERPRET;
                         }
@@ -775,16 +785,16 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1    adresa promenne odkud se vypisuje hodnota
             */
             case I_WRITE:
-                dat1 = getData(CT,BlStack->First,I->add1);
+                dat1 = getDat(CT,&BlStack->First,I->add1);
                 type1 = getType(I->add1);
 
                 if(isInteger(type1))
                 {
-                    printf("%i",dat1->i);
+                    printf("%i",*dat1->i);
                 }
                 else if(isDouble(type1))
                 {
-                    printf("%g",dat1->f);
+                    printf("%g",*dat1->f);
                 }
                 else if(isString(type1))
                 {

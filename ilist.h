@@ -71,3 +71,4 @@ void listNext(tList *L);
 void listGoto(tList *L, void *gotoInstr);
 void *listGetPointerLast(tList *L);
 tInstr *listGetData(tList *L);
+tInstr *listGetNextData(tList *L);
