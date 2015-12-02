@@ -121,7 +121,7 @@ int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key){
 
     }
   }
-
+  return -1;
 }
 
 
@@ -224,6 +224,7 @@ int BTDelete(BTree *BTreeDisp,int depth,tempST *tmpST){
 int BlockStackInit(BlockStack *BlStack){
   if((((*BlStack)=malloc(sizeof (struct Block_Stack)))==NULL)) return -1;
   (*BlStack)->First=NULL;
+  return 0;
 }
 //pridani nove tabulky do zasobniku
 /*
@@ -252,6 +253,7 @@ int BlockStackAdd(BlockStack *BlStack,GSTable *GST,string *id){
     newBPtr->BUPtr=newBU;
     (*BlStack)->First=newBPtr;
   }
+  return 0;
 }
 
 //odstrani blokovou tabulku z vrcholu zasobniku
@@ -264,7 +266,7 @@ int BlockStackDelete(BlockStack *BlStack){
   (*BlStack)->First=(*BlStack)->First->nxtBPtr;
   BUdelete(newBPtr->BUPtr, newBPtr->BUSize);
   free(newBPtr);
-
+  return 0;
 }
 
 //inicializace pomocneho seznamu neplatnych promennych
@@ -342,6 +344,7 @@ int BUdelete(BU *Block, int BlockSize){
     i++;
   }
   free(Block);
+  return 0;
 }
 
 
@@ -351,6 +354,7 @@ int BUdelete(BU *Block, int BlockSize){
 int GSTinit(GSTable *GST){
   if((((*GST)=malloc(sizeof (struct GlobalSystemTable)))==NULL)) return -1;
   (*GST)->FunRoot=NULL;
+  return 0;
 }
 // pridani nove funkce do globalni tabulky symbolu
 /*
@@ -458,6 +462,7 @@ FN GSTadd(GSTable *GST,string *id,int type){
       }
     }
   }
+  return NULL;
 }
 
 
@@ -637,7 +642,7 @@ int deleteFN(FN FNroot){
   if(FNroot->type!=NULL) strFree(FNroot->type);
   tempSTdelete(&(FNroot->tempSTable));
   free(FNroot);
-
+  return 0;
 
 }
 
@@ -707,6 +712,7 @@ union Dat *getDat(constTable *newCTable,BPtr *BP,BTree *BTpom){
     d=(*BP)->BUPtr[(*BTpom)->key].data;
     return d;
   }
+  return NULL;
 }
 
 int getType(BTree *BTpom){

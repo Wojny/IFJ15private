@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "str.c"
+//#include "str.c"
 #include "scaner.h"
+#include "sym_table.h"
 
 
 //--------------------------------------------------------SCANNER---------------------------
@@ -133,7 +134,7 @@ int getNextToken(string *attr){
 	      else if (strCmpConstStr(attr, "else") == 0) return KELSE;
 	      else if (strCmpConstStr(attr, "for") == 0) return KFOR;
 	      else if (strCmpConstStr(attr, "if") == 0) return KIF;
-	      else if (strCmpConstStr(attr, "int") == 0) return KINT;
+	      else if (strCmpConstStr(attr, "int") == 0) return KINTEGER;
 	      else if (strCmpConstStr(attr, "return") == 0) return KRETURN;
 	      else if (strCmpConstStr(attr, "string") == 0) return KSTRING;
 	      else return ID;

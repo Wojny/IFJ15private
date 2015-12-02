@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "str.c"
+#include "ilist.c"
 
 union Dat   // data promennych a konstant
 {

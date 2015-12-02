@@ -9,16 +9,19 @@ int parenth=0;
 int initSTStack(sTreeStack *STST){
   if((((*STST)=malloc(sizeof (struct SynTreeStack)))==NULL)) return -1;
   (*STST)->First=NULL;
+  return 0;
 }
 // odebrani a zruseni vrcholu zasobniku
 int popRemoveSTStack(sTreeStack *STST){
   sTree pomSTree=(*STST)->First;
   (*STST)->First=(*STST)->First->nxt;
   free(pomSTree);
+  return 0;
 }
 // odebrani vrcholu zasobniku
 int popSTStack(sTreeStack *STST){
   (*STST)->First=(*STST)->First->nxt;
+  return 0;
 }
 // vlozeni na vrchol zasobniku
 int pushSTStack(sTreeStack *STST,sTree newSTree){
@@ -37,6 +40,7 @@ int pushSTStack(sTreeStack *STST,sTree newSTree){
     newSTree->nxt=(*STST)->First;
     (*STST)->First=newSTree;
   }
+  return 0;
 }
 // vytvoreni uzlu syntaktickeho stromu
 sTree createSTree(BTree newBT,int isE,int stype){
