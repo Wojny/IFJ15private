@@ -2,13 +2,17 @@
 #include <stdlib.h>
 //#include <string.h>
 #include <stdbool.h>
+#include <limits.h>
 //#include "interpret.h"
-#include "ilist.h"
-#include "sym_table.h"
+//#include "ilist.h"
+//#include "sym_table.h"
 #include "sym_table.c"
-//#include "scaner.h"
+#include "scaner.h"
 #include "errors.h"
 //#include "str.h"
+#include "ial.c"
+
+void concat(char * s1,char * s2,char * vysledok);
 
 int interpret(tList *L, GSTable *G, constTable *CT)
 {
@@ -67,8 +71,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 // Kontrola typu double a int cisel -> 1-2 double ma double vysledek, oba int maji int vysledek
                 if(isDouble(type2))
                 {
-                    type1 = IDOUBLE;
-                    //setType(I->add1,IDOUBLE);
+                    setType(I->add1,IDOUBLE);
                     if(isDouble(type3))
                     {
                         *dat1->f =  *dat2->f + *dat3->f;
@@ -82,12 +85,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isDouble(type3))
                     {
-                        type1 = IDOUBLE;
+                        setType(I->add1,IDOUBLE);
                         *dat1->f = *(double *)dat2->i + *dat3->f;
                     }
                     else
                     {
-                        type1 = IINTEGER;
+                        setType(I->add1,IINTEGER);
                         *dat1->i = *dat2->i + *dat3->i;
                     }
                 }
@@ -111,7 +114,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 // Kontrola typu double a int cisel -> 1-2 double ma double vysledek, oba int maji int vysledek
                 if(isDouble(type2))
                 {
-                    type1 = IDOUBLE;
+                    setType(I->add1,IDOUBLE);
                     if(isDouble(type3))
                     {
                         *dat1->f = *dat2->f - *dat3->f;
@@ -125,12 +128,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isDouble(type3))
                     {
-                        type1 = IDOUBLE;
+                        setType(I->add1,IDOUBLE);
                         *dat1->f = *(double *)dat2->i - *dat3->f;
                     }
                     else
                     {
-                        type1 = IINTEGER;
+                        setType(I->add1,IINTEGER);
                         *dat1->i = *dat2->i - *dat3->i;
                     }
                 }
@@ -153,7 +156,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
 
                 if(isDouble(type2))
                 {
-                    type1 = IDOUBLE;
+                    setType(I->add1,IDOUBLE);
                     if(isDouble(type3))
                     {
                         *dat1->f = *dat2->f * *dat3->f;
@@ -167,12 +170,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isDouble(type3))
                     {
-                        type1 = IDOUBLE;
+                        setType(I->add1,IDOUBLE);
                         *dat1->f = *(double *)dat2->i * *dat3->f;
                     }
                     else
                     {
-                        type1 = IINTEGER;
+                        setType(I->add1,IINTEGER);
                         *dat1->i = *dat2->i * *dat3->i;
                     }
                 }
@@ -198,7 +201,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
 
                 if(isDouble(type2))
                 {
-                    type1 = IDOUBLE;
+                    setType(I->add1,IDOUBLE);
                     if(isDouble(type3))
                     {
                         *dat1->f = *dat2->f / *dat3->f;
@@ -212,12 +215,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isDouble(type3))
                     {
-                        type1 = IDOUBLE;
+                        setType(I->add1,IDOUBLE);
                         *dat1->f = *(double *)dat2->i / *dat3->f;
                     }
                     else
                     {
-                        type1 = IINTEGER;
+                        setType(I->add1,IINTEGER);
                         *dat1->i = *dat2->i / *dat3->i;
                     }
                 }
@@ -235,7 +238,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
-                type1 = IINTEGER;
+                setType(I->add1,IINTEGER);
 
                 if(isInteger(type2))
                 {
@@ -306,7 +309,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
-                type1 = IINTEGER;
+                setType(I->add1,IINTEGER);
 
                 if(isInteger(type2))
                 {
@@ -377,7 +380,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
-                type1 = IINTEGER;
+                setType(I->add1,IINTEGER);
 
                 if(isInteger(type2))
                 {
@@ -448,7 +451,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
-                type1 = IINTEGER;
+                setType(I->add1,IINTEGER);
 
                 if(isInteger(type2))
                 {
@@ -519,7 +522,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
-                type1 = IINTEGER;
+                setType(I->add1,IINTEGER);
 
                 if(isInteger(type2))
                 {
@@ -590,7 +593,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 dat3 = getDat(CT,&BlStack->First,I->add3);
                 type3 = getType(I->add3);
 
-                type1 = IINTEGER;
+                setType(I->add1,IINTEGER);
 
                 if(isInteger(type2))
                 {
@@ -661,15 +664,26 @@ int interpret(tList *L, GSTable *G, constTable *CT)
 
                for(int i=0;dat1->str->str!='\0';i++)
                 {
-                  if (dat1->str->str >= 'A' && dat1->str->str <= 'Z')
+                  if (*dat1->str->str >= 'A' && *dat1->str->str <= 'Z')
                      *dat3->i++;
-                  if (dat1->str->str >= 'a' && dat1->str->str <= 'z')
+                  if (*dat1->str->str >= 'a' && *dat1->str->str <= 'z')
                      *dat3->i++;
-                  if (dat1->str->str >= '0' && dat1->str->str <= '9')
+                  if (*dat1->str->str >= '0' && *dat1->str->str <= '9')
                      *dat3->i++;
                 }
                 break;
             case I_SUBSTR:
+                dat1 = getDat(CT,&BlStack->First,I->add1);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
+
+                for (int i = 0 ; i < *dat2->i ; i++)
+                    {
+                        dat1->str->str++;
+                    }
+                strcpy(dat3->str->str,dat1->str->str);
+                strncpy (dat3->str->str, dat3->str->str , *dat3->i);
+                *(*dat3->str->str+dat3->i) = '\0';
                 break;
             case I_CONCAT:
                 dat1 = getDat(CT,&BlStack->First,I->add1);
@@ -685,10 +699,17 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 concat(dat1->str->str,dat2->str->str,dat3->str->str);
                 break;
             case I_FIND:
+                dat1 = getDat(CT,&BlStack->First,I->add1);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
+                dat3 = getDat(CT,&BlStack->First,I->add3);
+                find(dat1->str->str,dat2->str->str,*dat3->i);
                 break;
             case I_SORT:
+                dat1 = getDat(CT,&BlStack->First,I->add1);
+                dat2 = getDat(CT,&BlStack->First,I->add2);
+                quicksort(dat1->str->str,dat2->str->str);
                 break;
-            ////////////////////////////////////////
+            /////////////////////////////////////////////////////////////////////
             /*
             null null null
             */
@@ -851,7 +872,7 @@ l1=l1+l2;
 while (l1>UCHAR_MAX)
 {
     printf("Pridlhy retazec");
-    return 0;
+    return;
 }
     while(*s1)
    {
@@ -868,4 +889,9 @@ while (l1>UCHAR_MAX)
    }
    *vysledok = '\0';
    s1--;
+}
+
+int main()
+{
+    return 0;
 }
