@@ -4,6 +4,17 @@
 #include <malloc.h>
 #include "ilist.h"
 
+void CreateInst(int instType, void *addr1, void *addr2, void *addr3, tList *L)
+// vlozi novou instrukci do seznamu instrukci
+{
+   tInstr I;
+   I.Type = instType;
+   I.add1 = addr1;
+   I.add2 = addr2;
+   I.add3 = addr3;
+   listInsertLast(L, I);
+}
+
 void listInit(tList *L)
 {
   L->first  = NULL;
@@ -64,6 +75,16 @@ tInstr *listGetData(tList *L)
     return NULL;
   }
   else return &(L->active->instr);
+}
+
+tInstr *instrGetData(tItemList *I)
+{
+  if (I == NULL)
+  {
+    printf("Chyba");
+    return NULL;
+  }
+  else return &(I->instr);
 }
 
 tInstr *listGetNextData(tList *L)

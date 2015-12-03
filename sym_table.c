@@ -487,6 +487,7 @@ int addFunType(FN *FunNode,int type){
   if(type==KSTRING) strAddChar((*FunNode)->type,'s');
   else if(type==KINTEGER) strAddChar((*FunNode)->type,'i');
   else if(type==KDOUBLE) strAddChar((*FunNode)->type,'d');
+  return 0;
 }
 int getFunParamType(FN *FunNode,int num){
   if(strGetLength((*FunNode)->type)>num){
@@ -690,7 +691,7 @@ BTree constTableAdd(constTable *newCTable,int type,union Dat *data){
     (*newCTable)->First=newBTree;
   }
   if((*newCTable)->BUSize>=(*newCTable)->BUAlloc){
-    if((*newCTable)->BUPtr=realloc((*newCTable)->BUPtr, sizeof(struct BlockUnit)*((*newCTable)->BUSize + 10))) return NULL;
+    if(((*newCTable)->BUPtr=realloc((*newCTable)->BUPtr, sizeof(struct BlockUnit)*((*newCTable)->BUSize + 10)))) return NULL;
     (*newCTable)->BUAlloc=(*newCTable)->BUSize + 10;
   }
   (*newCTable)->BUPtr[(*newCTable)->BUSize].ident=NULL;

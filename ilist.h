@@ -64,6 +64,7 @@ typedef struct
   struct itemList *active; //ukazatel na aktivni prvek
 } tList;
 
+void CreateInst(int instType, void *addr1, void *addr2, void *addr3, tList *L);
 void listInit(tList *L);
 void listFree(tList *L);
 void listInsertLast(tList *L, tInstr I);
@@ -72,4 +73,5 @@ void listNext(tList *L);
 void listGoto(tList *L, void *gotoInstr);
 void *listGetPointerLast(tList *L);
 tInstr *listGetData(tList *L);
+tInstr *instrGetData(tItemList *I);
 tInstr *listGetNextData(tList *L);
