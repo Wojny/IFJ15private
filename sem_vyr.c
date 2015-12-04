@@ -32,14 +32,14 @@ else if (isDouble(pom2) || isDouble(pom3))
 {
 type1=CDOUBLE;
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_DIV,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+CreateInst(I_DIV,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 else
 {
 type1=CINTEGER;
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_DIV,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+CreateInst(I_DIV,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -53,14 +53,14 @@ else if (isDouble(pom2) || isDouble(pom3))
 {
 type1=CDOUBLE;
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_ADD,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+CreateInst(I_ADD,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 else
 {
 type1=CINTEGER;
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_ADD,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+CreateInst(I_ADD(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -74,14 +74,14 @@ else if (isDouble(pom2) || isDouble(pom3))
 {
 type1=CDOUBLE;
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_SUB,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+CreateInst(I_SUB,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 else
 {
 type1=CINTEGER;
 ST->node=createConst(&newCTable,type1,&str);
-reateInst(I_SUB,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+reateInst(I_SUB,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -95,14 +95,14 @@ else if (isDouble(pom2) || isDouble(pom3))
 {
 type1=CDOUBLE;
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_MUL,ST->node,ST->LSynTree->node,ST->RSynTree->node),L;
+CreateInst(I_MUL,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 else
 {
 type1=CINTEGER;
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_MUL,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+CreateInst(I_MUL,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -118,7 +118,7 @@ if (isString(pom3) && (isInteger(pom2) || isDouble(pom2)))
 else
 {
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_EQUAL,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+CreateInst(I_EQUAL,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -134,7 +134,7 @@ if (isString(pom3) && (isInteger(pom2) || isDouble(pom2)))
 else
 {
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_LESSEQ,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+CreateInst(I_LESSEQ,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -150,7 +150,7 @@ if (isString(pom3) && (isInteger(pom2) || isDouble(pom2)))
 else
 {
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_LESS,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+CreateInst(I_LESS,ST->node,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -166,7 +166,7 @@ if (isString(pom3) && (isInteger(pom2) || isDouble(pom2)))
 else
 {
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_MOREEQ,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+CreateInst(I_MOREEQ,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -182,7 +182,7 @@ if (isString(pom3) && (isInteger(pom2) || isDouble(pom2)))
 else
 {
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_MORE,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+CreateInst(I_MORE,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -198,7 +198,7 @@ if (isString(pom3) && (isInteger(pom2) || isDouble(pom2)))
 else
 {
 ST->node=createConst(&newCTable,type1,&str);
-CreateInst(I_NOTEQ,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
+CreateInst(I_NOTEQ,(void *)ST->node,(void *)ST->LSynTree->node,(void *)ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
