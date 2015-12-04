@@ -1,5 +1,5 @@
 NAME=bin
-OBJFILES=errors.o ial.o ilist.o interpret.o main.o parser.o precedence.o scaner.o str.o sym_table.o syn_expression.o
+OBJFILES=errors.o ial.o ilist.o interpret.o main.o parser.o precedence.o scaner.o str.o sym_table.o syn_expression.o sem_vyr.o
 
 CC=gcc
 CFLAGS=-std=c99 -Wall -pedantic  -lm
