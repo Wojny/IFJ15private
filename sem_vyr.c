@@ -4,6 +4,10 @@
 #include "syn_expression.c"
 
 tList *L;
+void setL(tList *List)
+{
+	L=List;
+}
 
 string str;
 void initNullStr(){
