@@ -14,18 +14,93 @@
 
 void concat(char * s1,char * s2,char * vysledok);
 
-int interpret(tList *L, GSTable *G, constTable *CT)
+int interpret(/*tList *L, GSTable *G, constTable *CT*/)
 {
     //*G->FunRoot + string funkce,
+
+  string *s;
+  if(((s=malloc(sizeof (string)))==NULL)) return -1;
+  string *t;
+  if(((t=malloc(sizeof (string)))==NULL)) return -1;
+  string *u;
+  if(((u=malloc(sizeof (string)))==NULL)) return -1;
+  string *v;
+  if(((v=malloc(sizeof (string)))==NULL)) return -1;
+  strInit(s);
+  strInit(t);
+  strInit(u);
+  strInit(v);
+  strAddChar(s,'b');
+  strAddChar(t,'a');
+  strAddChar(u,'d');
+  strAddChar(v,'1');
+  strAddChar(v,'0');
+  strAddChar(v,'0');
+  strAddChar(v,'0');
+  strAddChar(v,'0');
+  strAddChar(v,'0');
+
+  tList *L;
+  if(((L=malloc(sizeof (tList)))==NULL)) return -1;
+  listInit(L);
+
+  GSTable G;
+  GSTinit(&G);
+
+  FN newFN=GSTadd(&G,s,KINTEGER);
+  BTAddID(&newFN,t, KINTEGER,0,0);
+  BTAddID(&newFN,u, KINTEGER,1,1);
+  BTree newBT=SearchBT(newFN, u);
+  BTree newBT1=SearchBT(newFN, t);
+  BTDelete(&newFN->BTroot,1,&newFN->tempSTable);
+
+  BTDelete(&newFN->BTroot,0,&newFN->tempSTable);
+  BlockStack BlStack;
+  BlockStackInit(&BlStack);
+  BlockStackAdd(&BlStack,&G,s);
+  constTable CT;
+  constTableInit(&CT);
+  BTree newBT2=createConst(&CT,KINTEGER,v);
+  union Dat *d=getDat(&CT,&BlStack->First,&newBT);
+  union Dat *d1=getDat(&CT,&BlStack->First,&newBT1);
+  *d1->i=1;
+  setType(newBT1,IINTEGER);
+  union Dat *d2=getDat(&CT,&BlStack->First,&newBT2);
+  *d->i=*d1->i+*d2->i;
+
+
+//    CreateInst(I_WRITE, (void*) newBT, NULL, NULL, L);
+//    CreateInst(I_DIV, (void*) newBT , (void*) newBT2, (void*) newBT1, L);
+//    CreateInst(I_WRITE, (void*) newBT, NULL, NULL, L);
+    CreateInst(I_FOR, NULL, NULL, NULL, L);
+    //dek
+    CreateInst(I_FOR_CHCK, NULL, NULL, NULL, L);
+    CreateInst(I_LESS, (void*) newBT, (void*) newBT1, (void*) newBT2, L);
+    CreateInst(I_FOR_DIFF, NULL, NULL, NULL, L);
+    CreateInst(I_ADD, (void*) newBT1, (void*) newBT1, (void*) newBT1, L);
+    CreateInst(I_FOR_COND, NULL, NULL, NULL, L);
+    CreateInst(I_WRITE, (void*) newBT, NULL, NULL, L);
+    CreateInst(I_WRITE, (void*) newBT1, NULL, NULL, L);
+
+  /*  CreateInst(I_WRITE, (void*) newBT2, NULL, NULL, L);
+    CreateInst(I_WRITE, (void*) newBT1, NULL, NULL, L);
+    CreateInst(I_WRITE, (void*) newBT2, NULL, NULL, L);
+    CreateInst(I_WRITE, (void*) newBT1, NULL, NULL, L);
+    CreateInst(I_WRITE, (void*) newBT2, NULL, NULL, L);
+    CreateInst(I_WRITE, (void*) newBT1, NULL, NULL, L);
+    CreateInst(I_WRITE, (void*) newBT2, NULL, NULL, L);*/
+    CreateInst(I_END_FOR, NULL, NULL, NULL, L);
+
     listFirst(L);
     tInstr *I;
     tInstr *nextI;
 
     tInstr *pomIn;
-    tItemList *instForChck[10];
-    tItemList *instForDiff[10];
+    void *instForChck;
+    void *instForDiff;
+    //FOR ZATIM BEZ ZANORENI
 
-    BlockStack BlStack;
+    //BlockStack BlStack;
 
     // Pomocne promenne pro pracy s daty
     union Dat *dat1, *dat2, *dat3;
@@ -38,15 +113,22 @@ int interpret(tList *L, GSTable *G, constTable *CT)
     int diffJump = 0;
     char inChar;
 
-    BlockStackInit(&BlStack);
-    BlockStackAdd(&BlStack,G,NULL); //NULL??
+   /* string *nameF;
+    if(((nameF=malloc(sizeof (string)))==NULL)) return -1;
+    strAddChar(nameF,'m');
+    strAddChar(nameF,'a');
+    strAddChar(nameF,'i');
+    strAddChar(nameF,'n');*/
+
+    //BlockStackInit(&BlStack);
+    //BlockStackAdd(&BlStack,G,nameF);
 
     memset(podminkyIf, -1, sizeof(podminkyIf));
 
     while(1)
     {
         I = listGetData(L);
-        nextI = listGetNextData(L);
+        if(L->active->nextItem != NULL) nextI = listGetNextData(L);
 
         switch(I->Type)
         {
@@ -54,12 +136,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = add2 + add3
             */
             case I_ADD:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                type2 = getType(I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
-                type3 = getType(I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 // Scitani pouze INT or DOUBLE
                 if(((isInteger(type1) || isDouble(type1)) && (isInteger(type2) || isDouble(type2)))) {}
@@ -100,12 +182,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = add2 - add3
             */
             case I_SUB:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                type2 = getType(I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
-                type3 = getType(I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 // Odcitani pouze INT or DOUBLE
                 if(((isInteger(type1) || isDouble(type1)) && (isInteger(type2) || isDouble(type2)))) {}
@@ -143,12 +225,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = add2 * add3
             */
             case I_MUL:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                type2 = getType(I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
-                type3 = getType(I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 // Nasobeni pouze INT or DOUBLE
                 if(((isInteger(type1) || isDouble(type1)) && (isInteger(type2) || isDouble(type2)))) {}
@@ -185,12 +267,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = add2 / add3
             */
             case I_DIV:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                type2 = getType(I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
-                type3 = getType(I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 // Nasobeni pouze INT or DOUBLE
                 if(((isInteger(type1) || isDouble(type1)) && (isInteger(type2) || isDouble(type2)))) {}
@@ -231,12 +313,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             */
 
             case I_LESS:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                type2 = getType(I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
-                type3 = getType(I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 setType(I->add1,IINTEGER);
 
@@ -302,12 +384,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = 1 pokud add2 > add3, jinak add1 = 0
             */
             case I_MORE:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                type2 = getType(I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
-                type3 = getType(I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 setType(I->add1,IINTEGER);
 
@@ -373,12 +455,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = 1 pokud add2 <= add3, jinak add1 = 0
             */
             case I_LESSEQ:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                type2 = getType(I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
-                type3 = getType(I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 setType(I->add1,IINTEGER);
 
@@ -444,12 +526,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = 1 pokud add2 >= add3, jinak add1 = 0
             */
             case I_MOREEQ:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                type2 = getType(I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
-                type3 = getType(I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 setType(I->add1,IINTEGER);
 
@@ -515,12 +597,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = 1 pokud add2 == add3, jinak add1 = 0
             */
             case I_EQUAL:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                type2 = getType(I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
-                type3 = getType(I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 setType(I->add1,IINTEGER);
 
@@ -586,12 +668,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1 = 1 pokud add2 != add3, jinak add1 = 0
             */
             case I_NOTEQ:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                type2 = getType(I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
-                type3 = getType(I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 setType(I->add1,IINTEGER);
 
@@ -657,8 +739,10 @@ int interpret(tList *L, GSTable *G, constTable *CT)
 
             */
             case I_LENGHT:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 *dat3->i = 0;
 
@@ -673,9 +757,12 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 }
                 break;
             case I_SUBSTR:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 for (int i = 0 ; i < *dat2->i ; i++)
                     {
@@ -686,27 +773,38 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 *(*dat3->str->str+dat3->i) = '\0';
                 break;
             case I_CONCAT:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                type2 = getType(I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
-                type3 = getType(I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
 
                 dat3->str->length = dat1->str->length + dat2->str->length;
                 // alokace
+                if(dat3->str->length >= dat3->str->allocSize)
+                {
+                    if ((dat3->str->str = (char*) realloc(dat3->str->str, dat3->str->length + STR_LEN_INC)) == NULL)
+                        return STR_ERROR;
+                    dat3->str->allocSize = dat3->str->length + STR_LEN_INC;
+                }
 
                 concat(dat1->str->str,dat2->str->str,dat3->str->str);
                 break;
             case I_FIND:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
-                dat3 = getDat(CT,&BlStack->First,I->add3);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+                dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
+                type3 = getType((BTree *) &I->add3);
                 find(dat1->str->str,dat2->str->str,*dat3->i);
                 break;
             case I_SORT:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                dat2 = getDat(CT,&BlStack->First,I->add2);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
                 quicksort(dat1->str->str,dat2->str->str);
                 break;
             /////////////////////////////////////////////////////////////////////
@@ -717,7 +815,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 zanoreniIf++;
                 break;
             case I_IF_COND:
-                dat1 = getDat(CT,&BlStack->First,pomIn->add1);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &pomIn->add1));
                 podminkyIf[zanoreniIf] = *dat1->i;
 
                 if(podminkyIf[zanoreniIf] == 0) //podminka neni splnena
@@ -757,11 +855,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 zanoreniFor++;
                 break;
             case I_FOR_CHCK:
-                instForChck[zanoreniFor] = L->active;
+                instForChck = (L->active);
                 break;
             case I_FOR_DIFF:
-                instForDiff[zanoreniFor] = L->active;
-                dat1 = getDat(CT,&BlStack->First,pomIn->add1);
+                instForDiff = (L->active);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &pomIn->add1));
                 podminkaFor = *dat1->i;
                 while(nextI->Type != I_FOR_COND)
                 {
@@ -774,7 +872,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 if(diffJump == 1)
                 {
                     diffJump = 0;
-                    listGoto(L,instForChck[zanoreniFor]);
+                    listGoto(L,instForChck);
                 }
                 else
                 {
@@ -795,8 +893,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             case I_END_FOR:
                 if(podminkaFor != 0)
                 {
+                    if(diffJump == 1) printf("TEST DIFF\n");
                     diffJump = 1;
-                    listGoto(L,instForDiff[zanoreniFor]);
+                    listGoto(L,instForDiff);
                 }
                 else
                 {
@@ -808,8 +907,8 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1    adresa promenne kam se ma ulozit nactena hodnota
             */
             case I_READ:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
 
                 if(isInteger(type1))
                 {
@@ -837,16 +936,16 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add1    adresa promenne odkud se vypisuje hodnota
             */
             case I_WRITE:
-                dat1 = getDat(CT,&BlStack->First,I->add1);
-                type1 = getType(I->add1);
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
 
                 if(isInteger(type1))
                 {
-                    printf("%i",*dat1->i);
+                    printf("%i\n",*dat1->i);
                 }
                 else if(isDouble(type1))
                 {
-                    printf("%g",*dat1->f);
+                    printf("%g\n",*dat1->f);
                 }
                 else if(isString(type1))
                 {
@@ -854,10 +953,54 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 }
                 else return IFJ_ERR_INTERPRET;
                 break;
+
+            /*
+            add1 dest
+            add2 source
+            */
+            case I_ASSIGN:
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                dat2 = getDat(&CT,&BlStack->First,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+
+                if(isInteger(type1))
+                {
+                    if(isInteger(type2))
+                    {
+                        *dat1->i = *dat2->i;
+                    }
+                    if(isDouble(type2))
+                    {
+                        *dat1->i = *(int *)dat2->f;
+                    }
+                    if(isString(type2)) return IFJ_ERR_INTERPRET;
+                }
+                else if(isDouble(type1))
+                {
+                    if(isInteger(type2))
+                    {
+                        *dat1->f = *(double *)dat2->i;
+                    }
+                    if(isDouble(type2))
+                    {
+                        *dat1->f = *dat2->f;
+                    }
+                    if(isString(type2)) return IFJ_ERR_INTERPRET;
+                }
+                else if(isString(type1))
+                {
+                    if(isString(type2))
+                    {
+                        strCopyString(dat1->str,dat1->str);
+                    }
+                    else return IFJ_ERR_INTERPRET;
+                }
+                break;
         }
 
         pomIn = I; //pamatujeme si predchozi ins pro podminky - zachova info pro else
-
+        if(L->active->nextItem == NULL) return 0;
         listNext(L);
     }
 }
@@ -893,5 +1036,6 @@ while (l1>UCHAR_MAX)
 
 int main()
 {
+    interpret();
     return 0;
 }
