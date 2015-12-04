@@ -6,6 +6,7 @@
 //#include "scaner.h"
 // inicializace pomocneho zasobniku
 int parenth=0;
+int endchar;
 int initSTStack(sTreeStack *STST){
   if((((*STST)=malloc(sizeof (struct SynTreeStack)))==NULL)) return -1;
   (*STST)->First=NULL;
@@ -87,8 +88,9 @@ union Dat *getData(constTable newCTable,int key){
 @param4 odkaz na tabulku konstant
 return vraci koren syntaktickeho stromu
 */
-sTree syn_exp(int inittype,string *inits,FN newFN,constTable newCTable){
+sTree syn_exp(int inittype,string *inits,FN newFN,constTable newCTable,int endType){
   parenth=0;
+  endchar=endType;
   PTableInit (PTable);
   sTreeStack STST;
   initSTStack(&STST);
@@ -170,7 +172,7 @@ int comp(sTreeStack STST,sTree ST0){
   sTree STpom=STST->First;
   int i;
   while(STpom->isE!=0) STpom=STpom->nxt;
-  if(((STpom->stype==SEMICOLON)&&(ST0->stype==SEMICOLON))||((STpom->stype==SEMICOLON)&&(ST0->stype==RPARENTH)&&(parenth<0))) return STEND;
+  if(((STpom->stype==SEMICOLON)&&(ST0->stype==SEMICOLON)&&(endchar==SEMICOLON))||((STpom->stype==SEMICOLON)&&(ST0->stype==RPARENTH)&&(parenth<0)&&(endchar==RPARENTH))) return STEND;
   i=PTable[convConstTypes(STpom->stype)][convConstTypes(ST0->stype)];
   return i;
 }

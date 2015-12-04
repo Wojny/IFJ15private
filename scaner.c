@@ -29,7 +29,7 @@ int getNextToken(string *attr){
   char s[3];
   int hex;
   int dec=1;
-  int num=0;
+  //int num=0;
   strClear(attr);
   while (1==1){
     c=getc(source); // precte znak ze vstupniho souboru
@@ -146,7 +146,9 @@ int getNextToken(string *attr){
         else if(c=='\n') return ERROR; // konec radku lexikalni chyba
         else if (c=='\\') state=7; // escape sekvence
         else if(c>=' ') strAddChar(attr,c); // nacitani retezce
-        else return ERROR;// lexikalni chyba
+        else{
+          return ERROR;// lexikalni chyba
+        }
         break;
       case 7:
         if(c=='"') strAddChar(attr,c);// vlozeni uvozovek do retezce
@@ -159,15 +161,21 @@ int getNextToken(string *attr){
             else if((c>='A')&&(c<='F')) c=10+(c-'A');
             hex=c*16;
             c=getc(source);
-            if(!(((c>='0')&&(c<='9'))||((c>='a')&&(c<='f'))||((c>='A')&&(c<='F')))) return ERROR;
+            if(!(((c>='0')&&(c<='9'))||((c>='a')&&(c<='f'))||((c>='A')&&(c<='F')))){
+              return ERROR;
+            }
             if((c>='a')&&(c<='f')) c=10+(c-'a');
             else if((c>='A')&&(c<='F')) c=10+(c-'A');
             hex=hex+c;
             strAddChar(attr,c);
           }
-          else return ERROR;
+          else{
+            return ERROR;
+          }
         }
-        else return ERROR;
+        else{
+          return ERROR;
+        }
         state=6;
         break;
 
@@ -218,7 +226,9 @@ int getNextToken(string *attr){
           strAddChar(attr,c);
           state=11;
         }
-        else return ERROR;
+        else{
+          return ERROR;
+        }
         break;
       case 11:
         if((c>='0')&&(c<='9')){ // nacteni posloupnosti cisel za desetinnou teckou
@@ -242,14 +252,18 @@ int getNextToken(string *attr){
           strAddChar(attr,c);
           state=14;
         }
-        else return ERROR;
+        else{
+          return ERROR;
+        }
         break;
       case 13:
         if((c>='0')&&(c<='9')){// nacteni cisla za znamenkem
           strAddChar(attr,c);
           state=14;
         }
-        else return ERROR;
+        else{
+          return ERROR;
+        }
         break;
       case 14:
         if((c>='0')&&(c<='9')){ // nacteni posloupnosti cisel za E

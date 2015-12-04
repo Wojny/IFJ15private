@@ -19,11 +19,14 @@ int depth; slouzi k uchovani hloubky zanoreni ve zdrojovem programu
 
 // inicializace polozky v tabulce symbolu
 int BTinit(BTree *BTnode){
-  if((((*BTnode)=malloc(sizeof (struct BT)))==NULL)) return -1;
+  if((((*BTnode)=malloc(sizeof (struct BT)))==NULL)){
+        return -1;
+  }
   (*BTnode)->ident=NULL;
   (*BTnode)->type=-1;
   (*BTnode)->depth=-1;
   (*BTnode)->key=-1;
+  (*BTnode)->def=-1;
   (*BTnode)->LBT=NULL;
   (*BTnode)->RBT=NULL;
   return 0;
@@ -51,7 +54,9 @@ int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key){
   if(vtype==KSTRING) type=ISTR;
   BTree pomBT=(*FunNode)->BTroot;
   if(pomBT->ident==NULL){
-    if((((*FunNode)->BTroot->ident=malloc(sizeof (string)))==NULL)) return -1;
+    if((((*FunNode)->BTroot->ident=malloc(sizeof (string)))==NULL)){
+      return -1;
+    }
     strInit((*FunNode)->BTroot->ident);
     strCopyString((*FunNode)->BTroot->ident,id);
     pomBT->type=type;
@@ -64,12 +69,16 @@ int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key){
   while(pomBT->ident!=NULL){
     cmp=strCmpString(pomBT->ident,id);
     if(cmp==0){
-      if(pomBT->depth==depth) return -1;
+      if(pomBT->depth==depth) return -1;// semanticka kontrola!!!!!!!!
       //mozna i kontrola typu
       if(pomBT->LBT==NULL){
         BTree newBT;
-        if(((newBT=malloc(sizeof (struct BT)))==NULL)) return -1;
-        if(((newBT->ident=malloc(sizeof (string)))==NULL)) return -1;
+        if(((newBT=malloc(sizeof (struct BT)))==NULL)){
+          return -1;
+        }
+        if(((newBT->ident=malloc(sizeof (string)))==NULL)){
+          return -1;
+        }
         strInit(newBT->ident);
         strCopyString(newBT->ident,id);
         newBT->type=type;
@@ -86,8 +95,12 @@ int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key){
     else if(cmp>0){
       if(pomBT->RBT==NULL){
         BTree newBT;
-        if(((newBT=malloc(sizeof (struct BT)))==NULL)) return -1;
-        if(((newBT->ident=malloc(sizeof (string)))==NULL)) return -1;
+        if(((newBT=malloc(sizeof (struct BT)))==NULL)){
+          return -1;
+        }
+        if(((newBT->ident=malloc(sizeof (string)))==NULL)){
+          return -1;
+        }
         strInit(newBT->ident);
         strCopyString(newBT->ident,id);
         newBT->type=type;
@@ -104,8 +117,12 @@ int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key){
     else{
       if(pomBT->LBT==NULL){
         BTree newBT;
-        if(((newBT=malloc(sizeof (struct BT)))==NULL)) return -1;
-        if(((newBT->ident=malloc(sizeof (string)))==NULL)) return -1;
+        if(((newBT=malloc(sizeof (struct BT)))==NULL)){
+          return -1;
+        }
+        if(((newBT->ident=malloc(sizeof (string)))==NULL)){
+          return -1;
+        }
         strInit(newBT->ident);
         strCopyString(newBT->ident,id);
         newBT->type=type;
@@ -123,6 +140,16 @@ int BTAddID(FN *FunNode,string *id, int vtype,int depth,int key){
   }
   return -1;
 }
+
+//nastaveni definice promenne
+void setVarDefined(BTree newBT){
+  newBT->def=1;
+}
+int isVarDefined(BTree newBT){
+  if(newBT->def==1) return 1;
+  else return 0;
+}
+
 
 
 //Prohledani stromove struktury tabulky symbolu zdali obsahuje dany identifikator
@@ -222,7 +249,9 @@ int BTDelete(BTree *BTreeDisp,int depth,tempST *tmpST){
 
 // inicializace zasobniku blokovych tabulek
 int BlockStackInit(BlockStack *BlStack){
-  if((((*BlStack)=malloc(sizeof (struct Block_Stack)))==NULL)) return -1;
+  if((((*BlStack)=malloc(sizeof (struct Block_Stack)))==NULL)){
+    return -1;
+  }
   (*BlStack)->First=NULL;
   return 0;
 }
@@ -235,10 +264,14 @@ return   vraci ne/uspesnost operace pridani
 int BlockStackAdd(BlockStack *BlStack,GSTable *GST,string *id){
   BU *newBU;
   BPtr newBPtr;
-  if(((newBPtr=malloc(sizeof (struct BlockPtr)))==NULL)) return -1;
+  if(((newBPtr=malloc(sizeof (struct BlockPtr)))==NULL)){
+    return -1;
+  }
   FN pomFN=SearchFN((*GST)->FunRoot,id);
   int size=tempSTlength(pomFN->tempSTable);
-  if(((newBU=malloc(sizeof (struct BlockUnit)*size))==NULL)) return -1;
+  if(((newBU=malloc(sizeof (struct BlockUnit)*size))==NULL)){
+    return -1;
+  }
   tempST2BU(pomFN->tempSTable,newBU);
 
   if((*BlStack)->First==NULL){
@@ -271,7 +304,9 @@ int BlockStackDelete(BlockStack *BlStack){
 
 //inicializace pomocneho seznamu neplatnych promennych
 int tempSTinit(tempST *tempTable){
-  if((((*tempTable)=malloc(sizeof (struct TST)))==NULL)) return -1;
+  if((((*tempTable)=malloc(sizeof (struct TST)))==NULL)){
+    return -1;
+  }
   (*tempTable)->First=NULL;
   (*tempTable)->Last=NULL;
   return 0;
@@ -352,7 +387,9 @@ int BUdelete(BU *Block, int BlockSize){
 //--------------------------GTS-------------
 // inicializace struktury obsahujici odkaz na koren globalni tabulky symbolu
 int GSTinit(GSTable *GST){
-  if((((*GST)=malloc(sizeof (struct GlobalSystemTable)))==NULL)) return -1;
+  if((((*GST)=malloc(sizeof (struct GlobalSystemTable)))==NULL)){
+    return -1;
+  }
   (*GST)->FunRoot=NULL;
   return 0;
 }
@@ -370,12 +407,18 @@ pote identifikator funkce a pote navratovy typ funkce
 */
 FN GSTadd(GSTable *GST,string *id,int type){
   FN FunNode;
-  if(((FunNode=malloc(sizeof (struct FunctionNode)))==NULL)) return NULL;
+  if(((FunNode=malloc(sizeof (struct FunctionNode)))==NULL)){
+    return NULL;
+  }
 
   if((*GST)->FunRoot==NULL){
     (*GST)->FunRoot=FunNode;
-    if(((FunNode->ident=malloc(sizeof (string)))==NULL)) return NULL;
-    if(((FunNode->type=malloc(sizeof (string)))==NULL)) return NULL;
+    if(((FunNode->ident=malloc(sizeof (string)))==NULL)){
+      return NULL;
+    }
+    if(((FunNode->type=malloc(sizeof (string)))==NULL)){
+      return NULL;
+    }
     strInit(FunNode->ident);
     strCopyString(FunNode->ident,id);
     strInit(FunNode->type);
@@ -400,8 +443,12 @@ FN GSTadd(GSTable *GST,string *id,int type){
         //mozna i kontrola typu
         if(pomFN->LFN==NULL){
           pomFN->LFN=FunNode;
-          if(((FunNode->ident=malloc(sizeof (string)))==NULL)) return NULL;
-          if(((FunNode->type=malloc(sizeof (string)))==NULL)) return NULL;
+          if(((FunNode->ident=malloc(sizeof (string)))==NULL)){
+            return NULL;
+          }
+          if(((FunNode->type=malloc(sizeof (string)))==NULL)){
+            return NULL;
+          }
           strInit(FunNode->ident);
           strCopyString(FunNode->ident,id);
           strInit(FunNode->type);
@@ -421,8 +468,12 @@ FN GSTadd(GSTable *GST,string *id,int type){
       else if(cmp>0){
         if(pomFN->RFN==NULL){
           pomFN->RFN=FunNode;
-          if(((FunNode->ident=malloc(sizeof (string)))==NULL)) return NULL;
-          if(((FunNode->type=malloc(sizeof (string)))==NULL)) return NULL;
+          if(((FunNode->ident=malloc(sizeof (string)))==NULL)){
+            return NULL;
+          }
+          if(((FunNode->type=malloc(sizeof (string)))==NULL)){
+            return NULL;
+          }
           strInit(FunNode->ident);
           strCopyString(FunNode->ident,id);
           strInit(FunNode->type);
@@ -442,8 +493,12 @@ FN GSTadd(GSTable *GST,string *id,int type){
       else{
         if(pomFN->LFN==NULL){
           pomFN->LFN=FunNode;
-          if(((FunNode->ident=malloc(sizeof (string)))==NULL)) return NULL;
-          if(((FunNode->type=malloc(sizeof (string)))==NULL)) return NULL;
+          if(((FunNode->ident=malloc(sizeof (string)))==NULL)){
+            return NULL;
+          }
+          if(((FunNode->type=malloc(sizeof (string)))==NULL)){
+            return NULL;
+          }
           strInit(FunNode->ident);
           strCopyString(FunNode->ident,id);
           strInit(FunNode->type);
@@ -651,9 +706,13 @@ int deleteFN(FN FNroot){
 
 //inicializace tabulky  konstant
 int constTableInit(constTable *newCTable){
-  if((((*newCTable)=malloc(sizeof (struct cTable)))==NULL)) return -1;
+  if((((*newCTable)=malloc(sizeof (struct cTable)))==NULL)){
+    return -1;
+  }
   (*newCTable)->First=NULL;
-  if((((*newCTable)->BUPtr=malloc(sizeof (struct BlockUnit)*10))==NULL)) return -1;
+  if((((*newCTable)->BUPtr=malloc(sizeof (struct BlockUnit)*10))==NULL)){
+    return -1;
+  }
   (*newCTable)->BUSize=0;
   (*newCTable)->BUAlloc=10;
   return 0;
@@ -669,7 +728,9 @@ return vraci odkaz na polozku v blokove tabulce konstant
 BTree constTableAdd(constTable *newCTable,int type,union Dat *data){
   BTree newBTree;
   if((*newCTable)->First==NULL){
-    if(((newBTree=malloc(sizeof (struct BT)))==NULL)) return NULL;
+    if(((newBTree=malloc(sizeof (struct BT)))==NULL)){
+      return NULL;
+    }
     (*newCTable)->First=newBTree;
     newBTree->ident=NULL;
     newBTree->type=type;
@@ -680,7 +741,9 @@ BTree constTableAdd(constTable *newCTable,int type,union Dat *data){
     newBTree->RBT=NULL;
   }
   else{
-    if(((newBTree=malloc(sizeof (struct BT)))==NULL)) return NULL;
+    if(((newBTree=malloc(sizeof (struct BT)))==NULL)){
+      return NULL;
+    }
     newBTree->ident=NULL;
     newBTree->type=type;
     newBTree->depth=0;
@@ -691,7 +754,9 @@ BTree constTableAdd(constTable *newCTable,int type,union Dat *data){
     (*newCTable)->First=newBTree;
   }
   if((*newCTable)->BUSize>=(*newCTable)->BUAlloc){
-    if(((*newCTable)->BUPtr=realloc((*newCTable)->BUPtr, sizeof(struct BlockUnit)*((*newCTable)->BUSize + 10)))) return NULL;
+    if(((*newCTable)->BUPtr=realloc((*newCTable)->BUPtr, sizeof(struct BlockUnit)*((*newCTable)->BUSize + 10)))){
+      return NULL;
+    }
     (*newCTable)->BUAlloc=(*newCTable)->BUSize + 10;
   }
   (*newCTable)->BUPtr[(*newCTable)->BUSize].ident=NULL;
@@ -772,23 +837,35 @@ return odkaz na nova data
 union Dat *createDat(int type){
   union Dat *pomDat;
   if((type==ISTR)||(type==CSTR)){
-    if(((pomDat=malloc(sizeof (union Dat)))==NULL)) return NULL;
+    if(((pomDat=malloc(sizeof (union Dat)))==NULL)){
+      return NULL;
+    }
     string *s;
-    if(((s=malloc(sizeof (string))))==NULL) return NULL;
+    if(((s=malloc(sizeof (string))))==NULL){
+      return NULL;
+    }
     strInit(s);
     pomDat->str=s;
 
   }
   else if((type==IINTEGER)||(type==CINTEGER)){
     int *pomI;
-    if(((pomI=malloc(sizeof (int)))==NULL)) return NULL;
-    if(((pomDat=malloc(sizeof (union Dat)))==NULL)) return NULL;
+    if(((pomI=malloc(sizeof (int)))==NULL)){
+      return NULL;
+    }
+    if(((pomDat=malloc(sizeof (union Dat)))==NULL)){
+      return NULL;
+    }
     pomDat->i=pomI;
   }
   else if((type==IDOUBLE)||(type==CDOUBLE)){
     double *pomD;
-    if(((pomD=malloc(sizeof (double)))==NULL)) return NULL;
-    if(((pomDat=malloc(sizeof (union Dat)))==NULL)) return NULL;
+    if(((pomD=malloc(sizeof (double)))==NULL)){
+      return NULL;
+    }
+    if(((pomDat=malloc(sizeof (union Dat)))==NULL)){
+      return NULL;
+    }
     pomDat->f=pomD;
   }
   else return NULL;
@@ -808,7 +885,9 @@ int updateDat(union Dat *pomDat,int type,int i,double d,string *s){
   if((type==ISTR)||(type==CSTR)){
     strFree(pomDat->str);
     pomDat->str=s;
-    if(((s=malloc(sizeof (string))))==NULL) return -1;
+    if(((s=malloc(sizeof (string))))==NULL){
+      return -1;
+    }
     strInit(s);
   }
   else if((type==IINTEGER)||(type==CINTEGER)){
