@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include "syn_expression.c"
 
+tList *L;
+
 string str;
 void initNullStr(){
   strInit(&str);
@@ -30,14 +32,14 @@ else if (isDouble(pom2) || isDouble(pom3))
 {
 type1=CDOUBLE;
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_DIV,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_DIV,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 else
 {
 type1=CINTEGER;
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_DIV,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_DIV,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -51,14 +53,14 @@ else if (isDouble(pom2) || isDouble(pom3))
 {
 type1=CDOUBLE;
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_ADD,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_ADD,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 else
 {
 type1=CINTEGER;
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_ADD,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_ADD,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -72,14 +74,14 @@ else if (isDouble(pom2) || isDouble(pom3))
 {
 type1=CDOUBLE;
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_SUB,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_SUB,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 else
 {
 type1=CINTEGER;
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_SUB,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+reateInst(I_SUB,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -93,14 +95,14 @@ else if (isDouble(pom2) || isDouble(pom3))
 {
 type1=CDOUBLE;
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_MUL,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_MUL,ST->node,ST->LSynTree->node,ST->RSynTree->node),L;
 return (ST->node->type);
 }
 else
 {
 type1=CINTEGER;
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_MUL,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_MUL,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -116,7 +118,7 @@ if (isString(pom3) && (isInteger(pom2) || isDouble(pom2)))
 else
 {
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_EQUAL,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_EQUAL,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -132,7 +134,7 @@ if (isString(pom3) && (isInteger(pom2) || isDouble(pom2)))
 else
 {
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_LESSEQ,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_LESSEQ,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -148,7 +150,7 @@ if (isString(pom3) && (isInteger(pom2) || isDouble(pom2)))
 else
 {
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_LESS,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_LESS,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -164,7 +166,7 @@ if (isString(pom3) && (isInteger(pom2) || isDouble(pom2)))
 else
 {
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_MOREEQ,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_MOREEQ,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -180,7 +182,7 @@ if (isString(pom3) && (isInteger(pom2) || isDouble(pom2)))
 else
 {
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_MORE,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_MORE,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -196,7 +198,7 @@ if (isString(pom3) && (isInteger(pom2) || isDouble(pom2)))
 else
 {
 ST->node=createConst(&newCTable,type1,&str);
-//CreateInst(I_NOTEQ,ST->node,ST->LSynTree->node,ST->RSynTree->node);
+CreateInst(I_NOTEQ,ST->node,ST->LSynTree->node,ST->RSynTree->node,L);
 return (ST->node->type);
 }
 }
@@ -207,7 +209,7 @@ int CheckRedefProm(int int1,int int2)
 {
 if (int1==int2)
 {
-printf("Sématická chyba");
+printf("SÃ©matickÃ¡ chyba");
 return false;
 }
 else return true;
@@ -220,7 +222,7 @@ int CheckParam(int poz,FN FNODE,int type)
 
 if (strGetLength(FNODE->type)<=poz)
 {
-printf("Sématická chyba");
+printf("SÃ©matickÃ¡ chyba");
 return false;
 }
 else
@@ -230,7 +232,7 @@ if ((c='i' && (isInteger(type))) || (c='i' && (isDouble(type))) || (c='f' && (is
 return true;
 else
 {
-printf("Sématická chyba");
+printf("SÃ©matickÃ¡ chyba");
 return false;
 }
 }
@@ -242,13 +244,9 @@ int CheckVarDefined(BTree newBT)
 	return true;
 	else
 	{
-printf("Sématická chyba");
+printf("SÃ©matickÃ¡ chyba");
 return false;
 	}
 }
-
-//isMultipleDefinedFun
-//checkFunParams
-//isParamEqual
 
 
