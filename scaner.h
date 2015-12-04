@@ -35,6 +35,7 @@
 #define LBRACKET  25
 #define RBRACKET  26
 
+
 #define ISTR       27
 #define IINTEGER   28
 #define IDOUBLE    29
@@ -46,6 +47,7 @@
 #define CIN       34
 
 #define END       35
+#define COLON     36
 
 
 

@@ -90,6 +90,9 @@ int getNextToken(string *attr){
         else if(c=='}'){ // konec bloku
           return RBRACKET;
         }
+        else if(c==','){ // konec bloku
+          return COLON;
+        }
         else if(c==EOF){ // konec souboru
           return END;
         }

@@ -124,3 +124,5 @@ int isMultipleDefinedFN(FN pomFN, FN pomFNvzor);
 int isParamEqual(GSTable GST, FN pomFNvzor);
 int isParamEqualFN(FN pomFN, FN pomFNvzor);
 int checkFunParams(FN pomFN,FN pomFNvzor);
+union Dat *getDatByKey(BPtr *BP,int key);
+int getTypeByKey(BPtr *BP,int key);

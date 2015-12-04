@@ -267,7 +267,7 @@ int BlockStackAdd(BlockStack *BlStack,GSTable *GST,string *id){
   if(((newBPtr=malloc(sizeof (struct BlockPtr)))==NULL)){
     return -1;
   }
-  FN pomFN=SearchFN((*GST)->FunRoot,id);
+  FN pomFN=SearchDefinedFN((*GST)->FunRoot,id);
   int size=tempSTlength(pomFN->tempSTable);
   if(((newBU=malloc(sizeof (struct BlockUnit)*size))==NULL)){
     return -1;
@@ -779,6 +779,22 @@ union Dat *getDat(constTable *newCTable,BPtr *BP,BTree *BTpom){
     return d;
   }
   return NULL;
+}
+
+union Dat *getDatByKey(BPtr *BP,int key){
+  union Dat *d;
+  
+    d=(*BP)->BUPtr[key].data;
+    return d;
+  
+}
+
+int getTypeByKey(BPtr *BP,int key){
+
+  
+    return (*BP)->BUPtr[key].type;
+    
+  
 }
 
 int getType(BTree *BTpom){
