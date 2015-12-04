@@ -17,7 +17,7 @@ void concat(char * s1,char * s2,char * vysledok);
 int interpret(/*tList *L, GSTable *G, constTable *CT*/)
 {
     //*G->FunRoot + string funkce,
-
+/*
   string *s;
   if(((s=malloc(sizeof (string)))==NULL)) return -1;
   string *t;
@@ -45,14 +45,16 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
   strAddChar(v,'0');
   strAddChar(tes,'b');
   strAddChar(tes,'a');
-
+*/
   tList *L;
   if(((L=malloc(sizeof (tList)))==NULL)) return -1;
   listInit(L);
 
   GSTable G;
   GSTinit(&G);
-
+  constTable CT;
+  constTableInit(&CT);
+/*
   FN newFN=GSTadd(&G,s,KINTEGER);
   setFunDefined(newFN);
   BTAddID(&newFN,t, KINTEGER,0,0);
@@ -65,8 +67,6 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
   BlockStack BlStack;
   BlockStackInit(&BlStack);
   BlockStackAdd(&BlStack,&G,s);
-  constTable CT;
-  constTableInit(&CT);
   BTree newBT2=createConst(&CT,KINTEGER,v);
   union Dat *d=getDat(&CT,&BlStack->First,&newBT);
   union Dat *d1=getDat(&CT,&BlStack->First,&newBT1);
@@ -74,14 +74,8 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
   setType(newBT1,IINTEGER);
   setType(newBT,IINTEGER);
   union Dat *d2=getDat(&CT,&BlStack->First,&newBT2);
-  //*d->i=*d1->i+*d2->i;
+  *d->i=*d1->i+*d2->i;
 
-
-    /*CreateInst(I_WRITE, (void*) newBT1, NULL, NULL, L);
-    CreateInst(I_WRITE, (void*) newBT2, NULL, NULL, L);
-    CreateInst(I_CONCAT, (void*) newBT1, (void*) newBT2,(void*) newBT, L);
-    CreateInst(I_DIV, (void*) newBT , (void*) newBT2, (void*) newBT1, L);
-   CreateInst(I_WRITE, (void*) newBT, NULL, NULL, L); */
     CreateInst(I_FOR, NULL, NULL, NULL, L);
     //dek
     CreateInst(I_FOR_CHCK, NULL, NULL, NULL, L);
@@ -89,18 +83,9 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
     CreateInst(I_FOR_DIFF, NULL, NULL, NULL, L);
     CreateInst(I_ADD, (void*) newBT1, (void*) newBT1, (void*) newBT1, L);
     CreateInst(I_FOR_COND, NULL, NULL, NULL, L);
-    //CreateInst(I_WRITE, (void*) newBT, NULL, NULL, L);
     CreateInst(I_WRITE, (void*) newBT1, NULL, NULL, L);
-
-  /*  CreateInst(I_WRITE, (void*) newBT2, NULL, NULL, L);
-    CreateInst(I_WRITE, (void*) newBT1, NULL, NULL, L);
-    CreateInst(I_WRITE, (void*) newBT2, NULL, NULL, L);
-    CreateInst(I_WRITE, (void*) newBT1, NULL, NULL, L);
-    CreateInst(I_WRITE, (void*) newBT2, NULL, NULL, L);
-    CreateInst(I_WRITE, (void*) newBT1, NULL, NULL, L);
-    CreateInst(I_WRITE, (void*) newBT2, NULL, NULL, L);*/
     CreateInst(I_END_FOR, NULL, NULL, NULL, L);
-
+*/
     listFirst(L);
     tInstr *I;
     tInstr *nextI;
@@ -109,8 +94,6 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
     void *instForChck;
     void *instForDiff;
     //FOR ZATIM BEZ ZANORENI
-
-    //BlockStack BlStack;
 
     // Pomocne promenne pro pracy s daty
     union Dat *dat1, *dat2, *dat3;
@@ -123,15 +106,16 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
     int diffJump = 0;
     char inChar;
 
-   /* string *nameF;
+    string *nameF;
     if(((nameF=malloc(sizeof (string)))==NULL)) return -1;
     strAddChar(nameF,'m');
     strAddChar(nameF,'a');
     strAddChar(nameF,'i');
-    strAddChar(nameF,'n');*/
+    strAddChar(nameF,'n');
 
-    //BlockStackInit(&BlStack);
-    //BlockStackAdd(&BlStack,G,nameF);
+    BlockStack BlStack;
+    BlockStackInit(&BlStack);
+    BlockStackAdd(&BlStack,G,nameF);
 
     memset(podminkyIf, -1, sizeof(podminkyIf));
 
@@ -1043,7 +1027,7 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
                 dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
                 type1 = getType((BTree *) &I->add1);
                 if(!(isString(type1))) return IFJ_ERR_INTERPRET;
-                BlockStackAdd(&BlStack,&G,dat1->str->str);
+                BlockStackAdd(&BlStack,&G,dat1->str);
                 break;
 
             case I_CALL:
