@@ -41,6 +41,8 @@
 #define I_FOR_DIFF 136 // ins kam se vracime pro vyhodnoceni vyrayu diff po cyklu    for(dek; podm; HERE diff)
 #define I_FOR_COND 137 //obdoba IF COND - za podminkou cyklu, zacatek insrukci       for(dek; podm; diff) HERE
 #define I_ASSIGN 138
+#define I_ASSIGNPARAM 139
+#define I_CREATE_BLOCK 140
 
 // 3 adresny kod
 typedef struct
