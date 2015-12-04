@@ -25,10 +25,8 @@ int getNextToken(string *attr){
   int c; // precteny znak
 
 
-  int count=0;
-  char s[3];
+
   int hex;
-  int dec=1;
   //int num=0;
   strClear(attr);
   while (1==1){
