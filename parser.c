@@ -8,20 +8,66 @@
 
 #include "parser.h"
 
+
+bool ReturnExist = false;
 bool MainSwitch = false;
 int ProgDepth = 0;
-int ProgKeys=0; //Return ProgKeys 0  and others from 1 to n end reset at end of function 
+int ProgKeys=0;
+string *Str0;
+void initstr0(string *str)
+{
+	strInit(str);
+	strAddChar(str,'0');
+}
+
+int InitBD(struct BD *BRDepth){
+  if(((BRDepth=malloc(sizeof (struct BD)))==NULL)) return -1;
+  BRDepth->BracketType=-1;
+  BRDepth->NextDepth=NULL;
+  //BRDepth=NULL;
+  return 0;
+}
+void AddBD(int type){
+  if(BDepth->BracketType==-1){
+    BDepth->BracketType=type;
+    BDepth->NextDepth=NULL;
+
+  }
+  else{
+    BracketDepth BDepthpom;
+    if(((BDepthpom=malloc(sizeof (struct BD)))==NULL)) return;
+    BDepthpom->BracketType=type;
+    BDepthpom->NextDepth=BDepth;
+    BDepth=BDepthpom;
+
+
+  }
+
+}
+
+int getBD(){
+  BracketDepth BDepthpom;
+  BDepthpom=BDepth;
+  BDepth=BDepth->NextDepth;
+  int pom=BDepthpom->BracketType;
+  free(BDepthpom);
+  return pom;
+
+
+}
+//Return ProgKeys 0  and others from 1 to n end reset at end of function
 //funct return add to 0xfunc1
-FN ActualFN;
-bool parserProlog() 
+
+
+bool parserProlog(string *attr, int *type)
 {
 	//Funkce Find(string s,string search),
 	//Substr(string s , int i, int n),
-	//concat(string s1, string s2), 
-	//Sort(string s), 
+	//concat(string s1, string s2),
+	//Sort(string s),
 	//Length(string s)
-	NextToken(attr,type);
-	if(*type == KSTRING || *type == KINT || *type == KDOUBLE)
+
+	if(*type == KSTRING || *type == KINTEGER || *type == KDOUBLE)
 		if(!Initializ(attr, type))
 			return false;
 	else if(*type == ID)
@@ -47,16 +93,16 @@ bool parserProlog()
 	else if (!Statement(attr,type))
 	{
 		return true;
-	}	
+	}
 	else
 	{
-		AddERR(line,IFJ_ERR_SYNTAX);	
+		AddERR(line,IFJ_ERR_SYNTAX);
 		return false;
 	}
 }
 
 bool Statement(string *attr, int *type)
-{	
+{
 	if (strcmp(attr->str, "auto"))
 	{
 		int typ;
@@ -64,32 +110,46 @@ bool Statement(string *attr, int *type)
 		if(*type == ID)
 			if(SearchBT(GST->FunNode, attr) == NULL)//Existujuci IDENTIFIKATOR
 			{
-				string Identif = attr;
+				string Identif = attr->str;
 				NextToken(attr, type);
 				if(Param(attr, type) == -1)
 					return false;
 				else
 				{
-					if(BTAddID(ActualFN,Identif,typ,ProgDepth,ProgKeys) == -1)//vratim typ   
-						AddERR(line,IFJ_ERR_PROGRAM);
+
+					if(BTAddID(ActualFN,Identif,ActualAdd2->type,ProgDepth,ProgKeys) == -1)//vratim typ
+					{
+							AddERR(line,IFJ_ERR_PROGRAM);
+							return false;
+					}
 					else
+					{
 						ProgKeys++;
+						ActualAdd1 = SearchBT(GST->FunNode, Identif);
+						CreateInst(I_ASSIGN,ActualAdd1,ActualAdd2,NULL);
+						return true
+					}
 				}
 			}
 
 	}
 	else if (strcmp(attr->str, "cout"))
 	{
-		while(!strcmp(attr->str,";"))
+		while(*type != SEMICOLON)
 		{
 			NextToken(attr,type);
-			if(strcmp(attr->str, "<<"))
+			if(*type == COUT)
 			{
 				NextToken(attr,type);
 				if(*type == CSTRING || *type == CINTEGER || *type == CDOUBLE || *type == ID)
-					CreateInst(I_COUT,attr,NULL,NULL);
-				else
-					AddERR(line,IFJ_ERR_SYNTAX);
+				{
+					if(isConstant(*type) == 1)
+						ActualAdd1=createConst(&newCTable,*type,attr);
+					else if((ActualAdd1=SearchBT(ActualFN, attr)) == NULL)
+						AddERR(line,IFJ_ERR_SYNTAX);
+
+				}
+				CreateInst(I_WRITE,ActualAdd1,NULL,NULL);
 			}
 			else
 			{
@@ -99,19 +159,19 @@ bool Statement(string *attr, int *type)
 		}
 		return true;
 	}
-	else if (strcmp(attr->str,"cin"))
+	else if (strcmp(attr->str,"cin"))//FUNKCE CIN
 	{
-		while(!strcmp(attr->str,";"))
+		while(*type != SEMICOLON)// not strcmp but return only TYPE of it
 		{
 			NextToken(attr,type);
-			if(strcmp(attr->str, ">>"))
+			if(*type == CIN)
 			{
 				NextToken(attr,type);
 				if(*type == ID)
 				{
-					if(SearchBT(GST->FunNode, attr) != NULL)//Existujuci IDENTIFIKATOR
+					if((ActualAdd1=SearchBT(GST->FunNode, attr)) != NULL)//Existujuci IDENTIFIKATOR
 					{
-						CreateInst(I_CIN,attr,NULL,NULL);
+						CreateInst(I_READ,attr,NULL,NULL);
 						return true;
 					}
 					else
@@ -124,28 +184,27 @@ bool Statement(string *attr, int *type)
 		return true;
 		//CreateInst(I_CIN,attr,NULL,NULL);
 	}
-	else if (strcmp(attr->str,"return"))
+	else if (strcmp(attr->str,"return"))//FUNKCE RETURN
 	{
+		ReturnExist = true;
 		NextToken(attr,type);
 		if(*type == CSTRING || *type == CINTEGER || *type == CDOUBLE || *type == ID)
 		{
 			if(*type == ID)
 				{
-					if(SearchBT(GST->FunNode, attr) != NULL)//Existujuci IDENTIFIKATOR
-					{
-						CreateInst(I_RETURN,attr,NULL,NULL);
-						return true;
-					}
-					else
+					if((ActualAdd1=SearchBT(GST->FunNode, attr)) == NULL)//Existujuci IDENTIFIKATOR
 						AddERR(line,IFJ_ERR_SYNTAX);
 				}
-			CreateInst(I_RETURN,attr,NULL,NULL);
-			return true;
+			else
+				ActualAdd1=createConst(&newCTable,*type,attr);
+
+			CreateInst(I_RETURN,*Str0,ActualAdd1,NULL);
 		}
 		else
 			AddERR(line,IFJ_ERR_SYNTAX);
+
 		NextToken(attr,type);
-		if(!strcmp(attr->str,";"))
+		if(*type != SEMICOLON )
 		{
 			AddERR(line,IFJ_ERR_SYNTAX);
 			return false;
@@ -153,93 +212,192 @@ bool Statement(string *attr, int *type)
 		else
 			return true;
 	}
-	else if (strcmp(attr->str,"if"))
+	else if (strcmp(attr->str,"if"))//FUNKCE IF
 	{
-		NextToken(attr,type);
-		if(strcmp(attr->str,"(")
+		NextToken(attr, type);
+		//control if is function
+		if(*type == LPARENTH)
 		{
-			/*nexttoken
-		if ( && nexttoken
+			CreateInst(I_IF,NULL,NULL,NULL);
+			NextToken(attr, type);
+            if(*type == CSTRING || *type == CINTEGER || *type == CDOUBLE || *type == ID || *type == LPARENTH)
+            {
 
-			precedence
+                if(*type == ID)
+                {
+                    if(!FunctionDef(attr,type))
+                        return true;
+                    else
+                    {
+                        if(SearchBT(GST->FunNode, attr) != NULL)
+                        {
+                            sTree SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,RPARENTH);
+                            if(SynSemTree == NULL)
+                                return false;
+                            if(sem_vyr(SynSemTree) != -1 )
+                            {
+                                ActualAdd2=SynSemTree->node;
+                                //return true;
+                            }
+                            else
+                                return false;
+                        }
+                        else
+                            AddERR(line,IFJ_ERR_SYNTAX);
+                    }
 
-		if {  then ProgDepth++
-		*/
-			CreateInst(I_IF,attr,NULL,NULL);
-			ProgDepth++;
-		}
-		else
-			AddERR(line,IFJ_ERR_SYNTAX);
-		
-	}
-	else if (strcmp(attr->str,"else"))
-	{
-		NextToken(attr,type);
-		if(strcmp(attr->str,"{")
-		{
-			CreateInst(I_ELSE,attr,NULL,NULL);
-			ProgDepth++;
-		}		
-		else
-		{
-			AddERR(line,IFJ_ERR_SYNTAX);
-			return false;
-		}
-	}
-	else if (strcmp(attr->str,"for"))
-	{
-		NextToken(attr,type);
-		if(strcmp(attr->str,"(")
-		{
-			if(parserProlog() == false)
-				AddERR(line,IFJ_ERR_SYNTAX);
-			//call precedence
-			if(parserProlog() == false)
-				AddERR(line,IFJ_ERR_SYNTAX);
-			
-			NextToken(attr,type);
-			if(strcmp(attr->str,"{")
+                }
+                else
+                {
+                    sTree SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,RPARENTH);
+					if(SynSemTree == NULL)
+						return false;
+					if(sem_vyr(SynSemTree) != -1 )
+					{
+						ActualAdd2=SynSemTree->node;
+						//return true;
+					}
+					else
+						return false;
+                }
+            }
+			else
 			{
-				CreateInst(I_ELSE,attr,NULL,NULL);
+                AddERR(line,IFJ_ERR_SYNTAX);
+                return false;
+			}
+			if(*type == LBRACKET)
+			{
+				CreateInst(I_IF_COND,NULL,NULL,NULL);
+				AddBD(I_IF);
 				ProgDepth++;
-			}		
+				return true;
+			}
 			else
 			{
 				AddERR(line,IFJ_ERR_SYNTAX);
 				return false;
 			}
 
-		}		
+		}
+		else
+			AddERR(line,IFJ_ERR_SYNTAX);
+
+
+
+
+
+	}
+	else if(strcmp(attr->str,"else"))//FUNKCE ELSE
+	{
+		NextToken(attr,type);
+		if(*type == LBRACKET)
+		{
+			CreateInst(I_ELSE,NULL,NULL,NULL);
+			AddBD(I_ELSE);
+			ProgDepth++;
+		}
+		else
+		{
+			AddERR(line,IFJ_ERR_SYNTAX);
+			return false;
+		}
+	}
+	else if (strcmp(attr->str,"for"))//FUNKCE FOR
+	{
+		NextToken(attr,type);
+		if(*type == LPARENTH)
+		{
+
+			CreateInstC(I_FOR,NULL,NULL,NULL);
+			NextToken(attr,type);
+			if(parserProlog(attr,type) == false)
+				AddERR(line,IFJ_ERR_SYNTAX);
+			CreateInst(I_FOR_CHCK,NULL,NULL,NULL);
+			//call precedence
+			NextToken(attr,type);
+			sTree SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,SEMICOLON);
+						if(SynSemTree == NULL)
+							return false;
+						if(sem_vyr(SynSemTree) != -1 )
+						{
+							ActualAdd2=SynSemTree->node;
+
+						}
+			CreateInst(I_FOR_DIFF,NULL,NULL,NULL);
+
+			NextToken(attr,type);
+			if(parserProlog(attr,type) == false)
+				AddERR(line,IFJ_ERR_SYNTAX);
+
+			NextToken(attr,type);
+			if(*type == LBRACKET)
+			{
+				CreateInst(I_FOR_COND,NULL,NULL,NULL);
+				AddBD(I_FOR);
+				ProgDepth++;
+			}
+			else
+			{
+				AddERR(line,IFJ_ERR_SYNTAX);
+				return false;
+			}
+
+		}
 		else
 			AddERR(line,IFJ_ERR_SYNTAX);
 		/*
 			pred for-em add ProgDepth++
 			(; -> error pozriet zadanie
 			(int i; i<10, i++)
-				i control if exist ked nie je definovane ked = zavolam Param 
+				i control if exist ked nie je definovane ked = zavolam Param
 		*/
 	}
-	else if (strcmp(attr->str,"{"))
+	else if (*type == LBRACKET)
 	{
-		ProgDepth++; 
-	}	
-	else if (strcmp(attr->str,"}"))
+		AddBD(200);
+		ProgDepth++;
+	}
+	else if (*type == RBRACKET)
 	{
-		ProgDepth--; 
+
+		if(BTDelete(ActualFN->BTroot,ProgDepth,ActualFN->tempSTable) == -1)
+			AddERR(line,IFJ_ERR_PROGRAM);
+		int EndBracket = getBD();
+		if(EndBracket == I_IF)
+			CreateInst(I_END_IF,NULL,NULL,NULL);
+		else if(EndBracket == I_FOR)
+			CreateInst(I_END_FOR,NULL,NULL,NULL);
+		else if(EndBracket == I_ELSE)
+			CreateInst(I_END_ELSE,NULL,NULL,NULL);
+		else if(EndBracket == I_FUNC)
+			CreateInst(I_END_FUNC,NULL,NULL,NULL);
+		else if(EndBracket == I_MAIN)
+			CreateInst(I_END_MAIN,NULL,NULL,NULL);
+
+
+		ProgDepth--;
 		if(ProgDepth == 0)
-			ProgKeys = 0;		
-	}	
-	else 
+		{
+			if(ReturnExist == false)
+				AddERR(leni,8)
+			ProgKeys = 0;
+			ReturnExist = false;
+			CreateInst(I_END_FUNC,NULL,NULL,NULL);
+		}
+
+	}
+	else
 	{
-		AddERR(line,IFJ_ERR_SYNTAX);	
+		AddERR(line,IFJ_ERR_SYNTAX);
 		return false;
-	}	
+	}
 	return true;
 }
 
 bool FunctionDef(string *attr, int *type)
 {
-	if (strcmp(attr->str,"lenght"))//vytvori instrukci  predem a uzivatelem deklarovanej funkci a priradi tam adresi 
+	if (strcmp(attr->str,"lenght"))//vytvori instrukci  predem a uzivatelem deklarovanej funkci a priradi tam adresi
 	{
 		CreateInst(I_LENGHT, attr->str, NULL, NULL);
 	}
@@ -261,64 +419,174 @@ bool FunctionDef(string *attr, int *type)
 	}
 	else if (SearchFN(GST->FunRoot, attr) != NULL)
 	{
-		CreateInst(I_CALL, attr->str, NULL, NULL);
+		CreateInst(I_CREATE_BLOCK,attr,NULL,NULL);
+		FunctCall(attr,type);
+		CreateInst(I_CALL, NULL, NULL, NULL);
+		CreateInst(I_GET_RETURN, ActualAdd2, NULL, NULL);
+		return true;
 	}
 	else
 	{
-		AddERR(line,IFJ_ERR_SYNTAX);	
+		AddERR(line,IFJ_ERR_SYNTAX);
 		return false;
 	}
 }
 
+bool IALFunctCall(string *attr, int *type)
+{
+	if(*type == LPARENTH)
+	{
+		int ParamNum = 0;
+		while(*type != LPARENTH)//volam do okola kim ne narazim na konec funkcnich param
+  		{
+
+  		}
+  	}
+}
+
+bool FunctCall(string *attr, int *type)
+{
+	if(*type != LPARENTH)
+		NextToken(attr,type);
+	if(*type == LPARENTH)
+	{
+		int ParamNum = 0;
+		while(*type == LPARENTH)//volam do okola kim ne narazim na konec funkcnich param
+  		{
+			ParamNum++;
+			NextToken(attr,type);
+			if(*type == CSTRING || *type == CINTEGER || *type == CDOUBLE || *type == ID)
+			{
+				if(isConstant(*type) == 1)
+				{
+					ActualAdd2=createConst(&newCTable,*type,attr);
+					CreateInst(I_ASSIGNPARAM,ParamNum,ActualAdd2,NULL);
+				}
+				else if((ActualAdd2=SearchBT(ActualFN, attr)) == NULL)
+					AddERR(line,IFJ_ERR_SYNTAX);
+				else
+					CreateInst(I_ASSIGNPARAM,ParamNum,ActualAdd2,NULL);
+
+			}
+
+			if(NextToken(attr,type) == 0)
+			{
+			 	if(*type == LPARENTH || *type == COLON)//NextToken musi byt "," alebo ")" inac ERROR
+					continue;
+				else
+				{
+					AddERR(line,IFJ_ERR_SYNTAX);
+					continue;
+				}
+			}
+			else
+			{
+				AddERR(line,IFJ_ERR_PROGRAM);
+				continue;
+			}
+		}
+		return true;
+	}
+	else
+	{
+		AddERR(line,IFJ_ERR_SYNTAX);
+		return false;
+	}
+
+}
+
 bool Param(string *attr, int *type)//ked existujem parameter zavolame tuto funkci ked je to premenne tak zavola sa percendence inom pripade moze bit to funkce
-{	
-	if(strcmp(attr->str,"="))
+{
+	if(*type == ASSIGN)
 	{
 		NextToken(attr, type);
 		//control if is function
 		if(*type == CSTRING || *type == CINTEGER || *type == CDOUBLE || *type == ID || *type == LPARENTH)
-			//call precedence
-			/*
-			ked narazim na konstantu createConst(newcTable,type,attr)  return Btree
-			return typ nasledujuceho znaku
-			*/
-		else if(!FunctionDef(attr,type))
+		{
+			if(*type == ID)
+			{
+				if(!FunctionDef(attr,type))
+					return true;
+				else
+				{
+					if(SearchBT(GST->FunNode, attr) != NULL)
+					{
+						sTree SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,SEMICOLON);
+						if(SynSemTree == NULL)
+							return false;
+						if(sem_vyr(SynSemTree) != -1 )
+						{
+							ActualAdd2=SynSemTree->node;
+							return true;
+						}
+						else
+							return false;
+
+
+					}
+					else
+						AddERR(line,IFJ_ERR_SYNTAX);
+				}
+
+			}
+			else
+			{
+				sTree SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,SEMICOLON);
+						if(SynSemTree == NULL)
+							return false;
+						if(sem_vyr(SynSemTree) != -1 )
+						{
+							ActualAdd2=SynSemTree->node;
+							return true;
+						}
+						else
+							return false;
+			}
+		}
+		else
+		{
+			AddERR(line,IFJ_ERR_SYNTAX);
 			return false;
+		}
 
 	}
 	else
 	{
-		AddERR(line,IFJ_ERR_SYNTAX);	
+		AddERR(line,IFJ_ERR_SYNTAX);
 		return false;
-	}	
+	}
 }
 
-FunctionParams(string *attr, int *type, int typFN, string Identif)
+bool FunctionParams(string *attr, int *type, int typFN, string Identif)
 {
 	if((ActualFN=GSTadd(GST, Identif, typFN)) != NULL)
 	{
 		ProgDepth++;
-		if(BTAddID(ActualFN,Str0,typFN,ProgDepth,ProgKeys) == -1)//nadeklarujem hodnotu return
+		addFunInst(ActualFN, L->last);
+		if(BTAddID(ActualFN,Str0,typFN,ProgDepth,ProgKeys) == -1)
 			AddERR(line,IFJ_ERR_PROGRAM);
 		else
 			ProgKeys++;
-		while(!strcmp(attr->str,")"))//volam do okola kim ne narazim na konec funkcnich param
-  		{									
+		while(*type != LPARENTH)//volam do okola kim ne narazim na konec funkcnich param
+  		{
 			NextToken(attr,type);
-			if(*type == ISTRING || *type == IINTEGER || *type == IDOUBLE || *type == RPARENTH)
+			if(*type == KSTRING || *type == KINTEGER || *type == KDOUBLE || *type == RPARENTH)
 				switch (*type)
 				{
-					case ISTRING:
+					case KSTRING:
 						NextToken(attr,type);
 						if(type == ID)
 						{
-							if(BTAddID(ActualFN,attr,ISTRING,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys  
+							if(BTAddID(ActualFN,attr,KSTRING,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys
 								AddERR(line,IFJ_ERR_PROGRAM);
 							else
+							{
+								addFunType(ActualFN, KSTRING);
 								ProgKeys++;
+							}
 							if(NextToken(attr,type) == 0)
 							{
-							 	if(strcmp(attr->str,")") || strcmp(attr->str,","))//NextToken musi byt "," alebo ")" inac ERROR
+							 	if(*type == LPARENTH || *type == COLON)//NextToken musi byt "," alebo ")" inac ERROR
 									break;
 								else
 								{
@@ -337,17 +605,20 @@ FunctionParams(string *attr, int *type, int typFN, string Identif)
 							AddERR(line,IFJ_ERR_SYNTAX);
 							break;
 						}
-					case IDOUBLE:
+					case KDOUBLE:
 						NextToken(attr,type);
 						if(type == ID)
 						{
-							if(BTAddID(ActualFN,attr,IDOUBLE,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys  
+							if(BTAddID(ActualFN,attr,KDOUBLE,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys
 								AddERR(line,IFJ_ERR_PROGRAM);
 							else
+							{
+								addFunType(ActualFN, KDOUBLE);
 								ProgKeys++;
+							}
 							if(NextToken(attr,type) == 0)
 							{
-							 	if(strcmp(attr->str,")") || strcmp(attr->str,","))//NextToken musi byt "," alebo ")" inac ERROR
+							 	if(*type == LPARENTH || *type == COLON)//NextToken musi byt "," alebo ")" inac ERROR
 									break;
 								else
 								{
@@ -366,17 +637,20 @@ FunctionParams(string *attr, int *type, int typFN, string Identif)
 							AddERR(line,IFJ_ERR_SYNTAX);
 							break;
 						}
-					case IINTEGER:
+					case KINTEGER:
 						NextToken(attr,type);
 						if(type == ID)
 						{
-							if(BTAddID(ActualFN,attr,IINTEGER,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys  
+							if(BTAddID(ActualFN,attr,KINTEGER,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys
 								AddERR(line,IFJ_ERR_PROGRAM);
 							else
+							{
+								addFunType(ActualFN, KINTEGER);
 								ProgKeys++;
+							}
 							if(NextToken(attr,type) == 0)
 							{
-							 	if(strcmp(attr->str,")") || strcmp(attr->str,","))//NextToken musi byt "," alebo ")" inac ERROR
+							 	if(*type == LPARENTH || *type == COLON)//NextToken musi byt "," alebo ")" inac ERROR
 									break;
 								else
 								{
@@ -397,24 +671,32 @@ FunctionParams(string *attr, int *type, int typFN, string Identif)
 						}
 					case RPARENTH:
 						break;
-											
+
 				}
 			else
 				AddERR(line,IFJ_ERR_SYNTAX);
 		}
 		if (strcmp(Identif,"main"))
-			CreateInst(I_MAIN, Identif, NULL, NULL, NULL);
+			CreateInst(I_MAIN, NULL, NULL, NULL);
 		else
-			CreateInst(I_FUNC, Identif, NULL, NULL, NULL);
+			CreateInst(I_FUNC, Identif, NULL, NULL);
 		while(1)//Bude vypisovat ERROR kim ne najde ; alebo {
 		{
-			if(NextToken(attr,type) == 0 && strcmp(attr->str,"{") || strcmp(attr->str,";"); 
+			if(NextToken(attr,type) == 0 && (*type == LBRACKET || *type == SEMICOLON);
 			{
-				if(strcmp(attr->str,";"))
+				if(*type == SEMICOLON)
 					ProgDepth--;
+				else
+				{
+					if(strcmp(Identif,"main"))
+						AddBD(I_MAIN);
+					else
+						AddBD(I_FUNC);
+				}
+
 				return true;
 			}
-			else									
+			else
 				AddERR(line,IFJ_ERR_SYNTAX);
 		}
 	}
@@ -431,7 +713,7 @@ bool Initializ(string *attr, int *type)
 	//pri deklaraci KINT ...   //CINT ked je cislo //IINTEGER typ promeny == identifikator
 	switch (*type)
 	{
-		case ISTRING:
+		case KSTRING:
 			NextToken(attr, type);
 			if(*type == ID) //Skontrolujeme ze je to IDENTIFIKATOR, ked nie tak ERROR
 			{
@@ -439,56 +721,77 @@ bool Initializ(string *attr, int *type)
 				if(strcmp(attr->str,"main"))//IDENTIFIKATOR je main
 				{
 					NextToken(attr, type);
-					if(strcmp(attr->str,"("))
+					if(*type == LPARENTH)
 					{
 						if(MainSwitch == false)//ked exituje uz main tak vraci ERROR
 						{
 							MainSwitch = true;
-							if(FunctionParams(attr,type,ISTRING,Identif))
+							if(FunctionParams(attr,type,KSTRING,Identif))
 								return true;
 							else
 							{
-								AddERR(line,IFJ_ERR_SYNTAX);	
+								AddERR(line,IFJ_ERR_SYNTAX);
 								return false;
-							}					
+							}
 						}
 						else
 						{
-							AddERR(line,IFJ_ERR_SYNTAX);	
+							AddERR(line,IFJ_ERR_SYNTAX);
 							return false;
 						}
 					}
 					else//Spatne nadeklarovana main funkce
 					{
-						AddERR(line,IFJ_ERR_SYNTAX);	
+						AddERR(line,IFJ_ERR_SYNTAX);
 						return false;
 					}
 				}
-				else 
+				else
 				{
 					NextToken(attr, type);
-					if(strcmp(attr->str,"("))//INDETIFIKATOR je meno Funkce
+					if(*type == LPARENTH)//INDETIFIKATOR je meno Funkce
 					{
-						if(SearchFN(GST->FunRoot, Identif) == NULL)//kontrolujem ze bol uz vytvoren tato funkce alebo ne 
+						if(SearchFN(GST->FunRoot, Identif) == NULL)//kontrolujem ze bol uz vytvoren tato funkce alebo ne
 						{
-							if(FunctionParams(attr,type,ISTRING,Identif))
+							if(FunctionParams(attr,type,KSTRING,Identif))
 								return true;// nasiel token "{" alebo ";"
 							else
 							{
-								AddERR(line,IFJ_ERR_SYNTAX);	
+								AddERR(line,IFJ_ERR_SYNTAX);
 								return false;
-							}	
+							}
 						}
 						else
 						{
-							AddERR(line,IFJ_ERR_SYNTAX);
-							//need to find duplicated functions end
-						}	
-					}					
-					else if(strcmp(attr->str,";"))//IDNTIFIKATOR je meno premenne 
+							if(FunctionParams(attr,type,KSTRING,Identif))
+							{
+								if(isParamEqual(GST,ActualFN) == 1)
+								{
+									if(idMultipleDefinedFun(GST,ActualFN)== 1)
+									{
+										AddERR(line,IFJ_ERR_SEMANTIC);
+										return false;
+									}
+									else
+										return true;// nasiel token "{" alebo ";"
+								}
+								else
+								{
+									AddERR(line,IFJ_ERR_SEMANTIC);
+									return false;
+								}
+							}
+							else
+							{
+								AddERR(line,IFJ_ERR_SYNTAX);
+								return false;
+							}
+						}
+					}
+					else if(*type == SEMICOLON)//IDNTIFIKATOR je meno premenne
 					{
-						
-						if(BTAddID(ActualFN,Identif,ISTRING,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys  
+
+						if(BTAddID(ActualFN,Identif,KSTRING,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys
 						{
 							AddERR(line,IFJ_ERR_PROGRAM);
 							return false;
@@ -497,9 +800,110 @@ bool Initializ(string *attr, int *type)
 						{
 							ProgKeys++;
 							return true;
-						}						
+						}
 					}
-					else if(strcmp(attr->str,"="))//IDNTIFIKATOR je meno premenne a dalsi token je "="
+					else if(*type == ASSIGN)//IDNTIFIKATOR je meno premenne a dalsi token je "="
+					{
+						if(BTAddID(ActualFN,Identif,KSTRING,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys
+						{
+							AddERR(line,IFJ_ERR_PROGRAM);
+							return false;
+						}
+						else
+						{
+							ActualAdd1 = SearchBT(GST->FunNode, Identif);//pridat do IINTEGER a IDOUBLE
+							ProgKeys++;
+							return true;
+						}
+						if(Param(attr, type) == -1)
+							return false;
+						else
+							{
+								CreateInst(I_ASSIGN,ActualAdd1,ActualAdd2,NULL);
+								return true;
+							}
+					}
+					else
+					{
+						AddERR(line,IFJ_ERR_SYNTAX);
+						return false;
+					}
+				}
+			}
+			else
+			{
+				AddERR(line,IFJ_ERR_SYNTAX);
+				return false;
+			}
+			break;
+		case KINTEGER:
+			NextToken(attr, type);
+			if(*type == ID)
+			{
+				Identif = attr->str;
+				if(strcmp(attr->str,"main"))//IDENTIFIKATOR je main
+				{
+					NextToken(attr, type);
+					if(*type == LPARENTH)
+					{
+						if(MainSwitch == false)//ked exituje uz main tak vraci ERROR
+						{
+							MainSwitch = true;
+							if(FunctionParams(attr,type,KINTEGER,Identif))
+								return true;
+							else
+							{
+								AddERR(line,IFJ_ERR_SYNTAX);
+								return false;
+							}
+						}
+						else
+						{
+							AddERR(line,IFJ_ERR_SYNTAX);
+							return false;
+						}
+					}
+					else//Spatne nadeklarovana main funkce
+					{
+						AddERR(line,IFJ_ERR_SYNTAX);
+						return false;
+					}
+				}
+				else
+				{
+					NextToken(attr, type);
+					if(*type == LPARENTH)//INDETIFIKATOR je meno Funkce
+					{
+						if(SearchFN(GST->FunRoot, Identif) == NULL)//kontrolujem ze bol uz vytvoren tato funkce alebo ne
+						{
+							if(FunctionParams(attr,type,KINTEGER,Identif))
+								return true;// nasiel token "{" alebo ";"
+							else
+							{
+								AddERR(line,IFJ_ERR_SYNTAX);
+								return false;
+							}
+						}
+						else
+						{
+							AddERR(line,IFJ_ERR_SYNTAX);
+							//need to find duplicated functions end
+						}
+					}
+					else if(*type == SEMICOLON)//IDNTIFIKATOR je meno premenne
+					{
+						if(BTAddID(ActualFN,Identif,KINTEGER,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys
+						{
+							AddERR(line,IFJ_ERR_PROGRAM);
+							return false;
+						}
+						else
+						{
+							ProgKeys++;
+							return true;
+						}
+					}
+					else if(*type == ASSIGN)//IDNTIFIKATOR je meno premenne a dalsi token je "="
 					{
 						if(Param(attr, type) == -1)
 							return false;
@@ -508,18 +912,18 @@ bool Initializ(string *attr, int *type)
 					}
 					else
 					{
-						AddERR(line,IFJ_ERR_SYNTAX);	
+						AddERR(line,IFJ_ERR_SYNTAX);
 						return false;
 					}
 				}
 			}
 			else
 			{
-				AddERR(line,IFJ_ERR_SYNTAX);	
+				AddERR(line,IFJ_ERR_SYNTAX);
 				return false;
 			}
 			break;
-		case IINTEGER:
+		case KDOUBLE:
 			NextToken(attr, type);
 			if(*type == ID)
 			{
@@ -527,55 +931,55 @@ bool Initializ(string *attr, int *type)
 				if(strcmp(attr->str,"main"))//IDENTIFIKATOR je main
 				{
 					NextToken(attr, type);
-					if(strcmp(attr->str,"("))
+					if(*type == LPARENTH)
 					{
 						if(MainSwitch == false)//ked exituje uz main tak vraci ERROR
 						{
 							MainSwitch = true;
-							if(FunctionParams(attr,type,IINTEGER,Identif))
+							if(FunctionParams(attr,type,KDOUBLE,Identif))
 								return true;
 							else
 							{
-								AddERR(line,IFJ_ERR_SYNTAX);	
+								AddERR(line,IFJ_ERR_SYNTAX);
 								return false;
-							}							
+							}
 						}
 						else
 						{
-							AddERR(line,IFJ_ERR_SYNTAX);	
+							AddERR(line,IFJ_ERR_SYNTAX);
 							return false;
 						}
 					}
 					else//Spatne nadeklarovana main funkce
 					{
-						AddERR(line,IFJ_ERR_SYNTAX);	
+						AddERR(line,IFJ_ERR_SYNTAX);
 						return false;
 					}
 				}
-				else 
+				else
 				{
 					NextToken(attr, type);
-					if(strcmp(attr->str,"("))//INDETIFIKATOR je meno Funkce
+					if(*type == LPARENTH)//INDETIFIKATOR je meno Funkce
 					{
-						if(SearchFN(GST->FunRoot, Identif) == NULL)//kontrolujem ze bol uz vytvoren tato funkce alebo ne 
+						if(SearchFN(GST->FunRoot, Identif) == NULL)//kontrolujem ze bol uz vytvoren tato funkce alebo ne
 						{
-							if(FunctionParams(attr,type,IINTEGER,Identif))
+							if(FunctionParams(attr,type,KDOUBLE,Identif))
 								return true;// nasiel token "{" alebo ";"
 							else
 							{
-								AddERR(line,IFJ_ERR_SYNTAX);	
+								AddERR(line,IFJ_ERR_SYNTAX);
 								return false;
-							}	
+							}
 						}
 						else
 						{
 							AddERR(line,IFJ_ERR_SYNTAX);
 							//need to find duplicated functions end
-						}		
+						}
 					}
-					else if(strcmp(attr->str,";"))//IDNTIFIKATOR je meno premenne 
+					else if(*type == SEMICOLON)//IDNTIFIKATOR je meno premenne
 					{
-						if(BTAddID(ActualFN,Identif,IINTEGER,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys  
+						if(BTAddID(ActualFN,Identif,KDOUBLE,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys
 						{
 							AddERR(line,IFJ_ERR_PROGRAM);
 							return false;
@@ -584,96 +988,9 @@ bool Initializ(string *attr, int *type)
 						{
 							ProgKeys++;
 							return true;
-						}		
-					}
-					else if(strcmp(attr->str,"="))//IDNTIFIKATOR je meno premenne a dalsi token je "="
-					{
-						if(Param(attr, type) == -1)
-							return false;
-						else
-							return true;
-					}
-					else
-					{
-						AddERR(line,IFJ_ERR_SYNTAX);	
-						return false;
-					}
-				}
-			}
-			else
-			{
-				AddERR(line,IFJ_ERR_SYNTAX);	
-				return false;
-			}
-			break;
-		case IDOUBLE:
-			NextToken(attr, type);
-			if(*type == ID)
-			{
-				Identif = attr->str;
-				if(strcmp(attr->str,"main"))//IDENTIFIKATOR je main
-				{
-					NextToken(attr, type);
-					if(strcmp(attr->str,"("))
-					{
-						if(MainSwitch == false)//ked exituje uz main tak vraci ERROR
-						{
-							MainSwitch = true;
-							if(FunctionParams(attr,type,IDOUBLE,Identif))
-								return true;
-							else
-							{
-								AddERR(line,IFJ_ERR_SYNTAX);	
-								return false;
-							}							
-						}
-						else
-						{
-							AddERR(line,IFJ_ERR_SYNTAX);	
-							return false;
 						}
 					}
-					else//Spatne nadeklarovana main funkce
-					{
-						AddERR(line,IFJ_ERR_SYNTAX);	
-						return false;
-					}
-				}
-				else 
-				{
-					NextToken(attr, type);
-					if(strcmp(attr->str,"("))//INDETIFIKATOR je meno Funkce
-					{
-						if(SearchFN(GST->FunRoot, Identif) == NULL)//kontrolujem ze bol uz vytvoren tato funkce alebo ne 
-						{
-							if(FunctionParams(attr,type,IDOUBLE,Identif))
-								return true;// nasiel token "{" alebo ";"
-							else
-							{
-								AddERR(line,IFJ_ERR_SYNTAX);	
-								return false;
-							}	
-						}
-						else
-						{
-							AddERR(line,IFJ_ERR_SYNTAX);
-							//need to find duplicated functions end
-						}	
-					}
-					else if(strcmp(attr->str,";"))//IDNTIFIKATOR je meno premenne 
-					{
-						if(BTAddID(ActualFN,Identif,IDOUBLE,ProgDepth,ProgKeys) == -1)//ked IDENTIFIKATOR je uspesne ukladan tak zvysim ProgKeys  
-						{
-							AddERR(line,IFJ_ERR_PROGRAM);
-							return false;
-						}
-						else
-						{
-							ProgKeys++;
-							return true;
-						}		
-					}
-					else if(strcmp(attr->str,"="))//IDNTIFIKATOR je meno premenne a dalsi token je "="
+					else if(*type == ASSIGN)//IDNTIFIKATOR je meno premenne a dalsi token je "="
 					{
 						if(Param(attr, type) == -1)//zavolam funkci param ktory pomaha za "=" zpracovat IDENTIFI.
 							return false;
@@ -682,14 +999,14 @@ bool Initializ(string *attr, int *type)
 					}
 					else
 					{
-						AddERR(line,IFJ_ERR_SYNTAX);	
+						AddERR(line,IFJ_ERR_SYNTAX);
 						return false;
 					}
 				}
 			}
 			else
 			{
-				AddERR(line,IFJ_ERR_SYNTAX);	
+				AddERR(line,IFJ_ERR_SYNTAX);
 				return false;
 			}
 			break;
@@ -697,7 +1014,7 @@ bool Initializ(string *attr, int *type)
 
 }
 
-bool parser() 
+bool parser()
 {
 	bool res = true;
 
@@ -711,9 +1028,17 @@ bool parser()
 		AddERR(line, IFJ_ERR_PROGRAM);
 		res = false;
 	}
-	else if(!parserProlog())
-	{
+	else if(InitBD(BRDepth) == -1)
 		AddERR(line, IFJ_ERR_PROGRAM);
+	else //if(!parserProlog())//while
+	{
+		NextToken(attr,type);
+		while(*type != END)
+		{
+			parserProlog(attr,type);
+			NextToken(attr,type);
+		}
+
 		res = false;
 	}
 	return res;
@@ -726,5 +1051,5 @@ int NextToken(string *attr, int *type)
 	if(type == -1)
 		return -1;
 	else
-		return 0; 
+		return 0;
 }
