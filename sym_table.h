@@ -126,3 +126,4 @@ int isParamEqualFN(FN pomFN, FN pomFNvzor);
 int checkFunParams(FN pomFN,FN pomFNvzor);
 union Dat *getDatByKey(BPtr *BP,int key);
 int getTypeByKey(BPtr *BP,int key);
+void setFunDefined(FN FNpom);

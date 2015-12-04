@@ -972,3 +972,8 @@ int isVar(int type){
   if((type==IINTEGER)||(type==IDOUBLE)||(type==ISTR)) return 1;
   return 0;
 }
+
+
+void setFunDefined(FN FNpom){
+  FNpom->def=1;
+}
