@@ -597,13 +597,13 @@ FN SearchDefinedFN(FN FNroot, string *id){
     cmp=strCmpString(pomFN->ident,id);
     if(cmp==0){
       if(pomFN->def==1) return pomFN;
-      else return SearchFN(pomFN->LFN,id);
+      else return SearchDefinedFN(pomFN->LFN,id);
     }
     else if(cmp>0){
-      return SearchFN(pomFN->RFN,id);
+      return SearchDefinedFN(pomFN->RFN,id);
     }
     else{
-      return SearchFN(pomFN->LFN,id);
+      return SearchDefinedFN(pomFN->LFN,id);
     }
   }
   else return NULL;
