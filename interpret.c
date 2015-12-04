@@ -26,10 +26,13 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
   if(((u=malloc(sizeof (string)))==NULL)) return -1;
   string *v;
   if(((v=malloc(sizeof (string)))==NULL)) return -1;
+  string *tes;
+  if(((tes=malloc(sizeof (string)))==NULL)) return -1;
   strInit(s);
   strInit(t);
   strInit(u);
   strInit(v);
+  strInit(tes);
   strAddChar(s,'b');
   strAddChar(t,'a');
   strAddChar(u,'d');
@@ -39,6 +42,9 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
   strAddChar(v,'0');
   strAddChar(v,'0');
   strAddChar(v,'0');
+  strAddChar(v,'0');
+  strAddChar(tes,'b');
+  strAddChar(tes,'a');
 
   tList *L;
   if(((L=malloc(sizeof (tList)))==NULL)) return -1;
@@ -48,6 +54,7 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
   GSTinit(&G);
 
   FN newFN=GSTadd(&G,s,KINTEGER);
+  setFunDefined(newFN);
   BTAddID(&newFN,t, KINTEGER,0,0);
   BTAddID(&newFN,u, KINTEGER,1,1);
   BTree newBT=SearchBT(newFN, u);
@@ -63,15 +70,18 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
   BTree newBT2=createConst(&CT,KINTEGER,v);
   union Dat *d=getDat(&CT,&BlStack->First,&newBT);
   union Dat *d1=getDat(&CT,&BlStack->First,&newBT1);
-  *d1->i=1;
+  *d1->i=5;
   setType(newBT1,IINTEGER);
+  setType(newBT,IINTEGER);
   union Dat *d2=getDat(&CT,&BlStack->First,&newBT2);
-  *d->i=*d1->i+*d2->i;
+  //*d->i=*d1->i+*d2->i;
 
 
-//    CreateInst(I_WRITE, (void*) newBT, NULL, NULL, L);
-//    CreateInst(I_DIV, (void*) newBT , (void*) newBT2, (void*) newBT1, L);
-//    CreateInst(I_WRITE, (void*) newBT, NULL, NULL, L);
+    /*CreateInst(I_WRITE, (void*) newBT1, NULL, NULL, L);
+    CreateInst(I_WRITE, (void*) newBT2, NULL, NULL, L);
+    CreateInst(I_CONCAT, (void*) newBT1, (void*) newBT2,(void*) newBT, L);
+    CreateInst(I_DIV, (void*) newBT , (void*) newBT2, (void*) newBT1, L);
+   CreateInst(I_WRITE, (void*) newBT, NULL, NULL, L); */
     CreateInst(I_FOR, NULL, NULL, NULL, L);
     //dek
     CreateInst(I_FOR_CHCK, NULL, NULL, NULL, L);
@@ -79,7 +89,7 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
     CreateInst(I_FOR_DIFF, NULL, NULL, NULL, L);
     CreateInst(I_ADD, (void*) newBT1, (void*) newBT1, (void*) newBT1, L);
     CreateInst(I_FOR_COND, NULL, NULL, NULL, L);
-    CreateInst(I_WRITE, (void*) newBT, NULL, NULL, L);
+    //CreateInst(I_WRITE, (void*) newBT, NULL, NULL, L);
     CreateInst(I_WRITE, (void*) newBT1, NULL, NULL, L);
 
   /*  CreateInst(I_WRITE, (void*) newBT2, NULL, NULL, L);
@@ -744,17 +754,7 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
                 dat3 = getDat(&CT,&BlStack->First,((BTree *) &I->add3));
                 type3 = getType((BTree *) &I->add3);
 
-                *dat3->i = 0;
-
-               for(int i=0;dat1->str->str!='\0';i++)
-                {
-                  if (*dat1->str->str >= 'A' && *dat1->str->str <= 'Z')
-                     *dat3->i++;
-                  if (*dat1->str->str >= 'a' && *dat1->str->str <= 'z')
-                     *dat3->i++;
-                  if (*dat1->str->str >= '0' && *dat1->str->str <= '9')
-                     *dat3->i++;
-                }
+                *dat3->i = dat1->str->length;
                 break;
             case I_SUBSTR:
                 dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
@@ -996,6 +996,67 @@ int interpret(/*tList *L, GSTable *G, constTable *CT*/)
                     }
                     else return IFJ_ERR_INTERPRET;
                 }
+                break;
+
+            case I_ASSIGNPARAM:
+                dat1 = getDatByKey(&BlStack->First,((int)&I->add1));
+                type1 = getTypeByKey(&BlStack->First,((int)&I->add1));
+                dat2 = getDat(&CT,&BlStack->First->nxtBPtr,((BTree *) &I->add2));
+                type2 = getType((BTree *) &I->add2);
+
+                //kontrola typù a prirazeni 2 -> 1
+                if(isInteger(type1))
+                {
+                    if(isInteger(type2))
+                    {
+                        *dat1->i = *dat2->i;
+                    }
+                    if(isDouble(type2))
+                    {
+                        *dat1->i = *(int *)dat2->f;
+                    }
+                    if(isString(type2)) return IFJ_ERR_INTERPRET;
+                }
+                else if(isDouble(type1))
+                {
+                    if(isInteger(type2))
+                    {
+                        *dat1->f = *(double *)dat2->i;
+                    }
+                    if(isDouble(type2))
+                    {
+                        *dat1->f = *dat2->f;
+                    }
+                    if(isString(type2)) return IFJ_ERR_INTERPRET;
+                }
+                else if(isString(type1))
+                {
+                    if(isString(type2))
+                    {
+                        strCopyString(dat1->str,dat1->str);
+                    }
+                    else return IFJ_ERR_INTERPRET;
+                }
+                break;
+
+            case I_CREATE_BLOCK:
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                if(!(isString(type1))) return IFJ_ERR_INTERPRET;
+                BlockStackAdd(&BlStack,&G,dat1->str->str);
+                break;
+
+            case I_CALL:
+                break;
+
+                // Pokud je return main, tak konec s 0
+            case I_RETURN:
+                dat1 = getDat(&CT,&BlStack->First,((BTree *) &I->add1));
+                type1 = getType((BTree *) &I->add1);
+                if(strcmp(dat1->str->str,"main") == 0) return 0;
+                break;
+
+            case I_MAIN:
                 break;
         }
 
