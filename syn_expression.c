@@ -157,7 +157,7 @@ sTree syn_exp(int inittype,string *inits,FN newFN,constTable newCTable,int endTy
     }
     else if(c==STGREAT){//>
       int rule=getRuleNum(STST);
-      int isOK=execRule(&STST,rule);
+      execRule(&STST,rule);
     }
     else if(c==STEND){
       return STST->First;
