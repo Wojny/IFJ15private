@@ -261,23 +261,18 @@ int BlockStackInit(BlockStack *BlStack){
 return   vraci ne/uspesnost operace pridani
 */
 int BlockStackAdd(BlockStack *BlStack,GSTable *GST,string *id){
-  printf("iii");
   BU *newBU;
   BPtr newBPtr;
   if(((newBPtr=malloc(sizeof (struct BlockPtr)))==NULL)){
     return -1;
   }
-  strPrint((*GST)->FunRoot->ident);
   FN pomFN=SearchDefinedFN((*GST)->FunRoot,id);
-  if(pomFN==NULL) printf("qwerty");
   int size=tempSTlength(pomFN->tempSTable);
   if(((newBU=malloc(sizeof (struct BlockUnit)*size))==NULL)){
     return -1;
   }
   tempST2BU(pomFN->tempSTable,newBU);
-  printf("iui");
   if((*BlStack)->First==NULL){
-        printf("uuuu");
     newBPtr->nxtBPtr=NULL;
     newBPtr->BUSize=size;
     newBPtr->BUPtr=newBU;
@@ -351,13 +346,16 @@ return vraci ne/uspesnost operace
 */
 int tempST2BU(tempST tempTable,BU *newBU){
   BTree pomBT=tempTable->First;
+  printf("testX1");
 
   while(pomBT!=NULL){
+    //    printf("testXX\n");
     newBU[pomBT->key].ident=pomBT->ident;
     newBU[pomBT->key].type=pomBT->type;
     newBU[pomBT->key].data=createDat(pomBT->type);
     newBU[pomBT->key].init=0;
     pomBT=pomBT->RBT;
+    //    printf("testYY\n");
   }
   return 0;
 }
@@ -854,6 +852,7 @@ double convStrToDouble(string *s){
 return odkaz na nova data
 */
 union Dat *createDat(int type){
+    printf("testAA\n");
   union Dat *pomDat;
   if((type==ISTR)||(type==CSTR)){
     if(((pomDat=malloc(sizeof (union Dat)))==NULL)){
@@ -867,17 +866,17 @@ union Dat *createDat(int type){
     pomDat->str=s;
 
   }
-  else if((type==IINTEGER)||(type==CINTEGER)){
+  else {//if((type==IINTEGER)||(type==CINTEGER)){
     int *pomI;
-    if(((pomI=malloc(sizeof (int)))==NULL)){
+    if((pomI=malloc(sizeof (int)))==NULL){
       return NULL;
     }
-    if(((pomDat=malloc(sizeof (union Dat)))==NULL)){
+    if((pomDat=malloc(sizeof (union Dat)))==NULL){
       return NULL;
     }
-    pomDat->i=pomI;
+   // pomDat->i=pomI;
   }
-  else if((type==IDOUBLE)||(type==CDOUBLE)){
+  /*else if((type==IDOUBLE)||(type==CDOUBLE)){
     double *pomD;
     if(((pomD=malloc(sizeof (double)))==NULL)){
       return NULL;
@@ -886,9 +885,10 @@ union Dat *createDat(int type){
       return NULL;
     }
     pomDat->f=pomD;
-  }
-  else return NULL;
-  return pomDat;
+  }*/
+//  else return NULL;
+  printf("testZZ\n");
+  return NULL;
 }
 
 //naplneni nebo aktualizovani dat

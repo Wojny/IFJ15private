@@ -57,7 +57,6 @@ int interpret(tList *L, GSTable *G, constTable *CT)
     while(1)
     {
         I = listGetData(L);
-        printf("abc");
         if(L->active->nextItem != NULL) nextI = listGetNextData(L);
 
         switch(I->Type)
@@ -982,11 +981,9 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add2 source
             */
             case I_ASSIGN:
-                type1 = getType((BTree *) &I->add1);
-                if(BlStack->First==NULL) printf(" asd %d",type1);
                 dat1 = getDat(CT,&BlStack->First,((BTree *) &I->add1));
                 type1 = getType((BTree *) &I->add1);
-                printf("abc");
+                printf("ABC");
                 dat2 = getDat(CT,&BlStack->First,((BTree *) &I->add2));
                 type2 = getType((BTree *) &I->add2);
 
@@ -994,7 +991,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 {
                     if(isInteger(type2))
                     {
-                        *dat1->i = *dat2->i;
+                        *(dat1->i) = *(dat2->i);
                     }
                     if(isDouble(type2))
                     {
@@ -1034,6 +1031,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                         return 4;
                     }
                 }
+                  printf("abc");
                 break;
 
             case I_ASSIGNPARAM:
@@ -1090,7 +1088,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 break;
 
             case I_CREATE_BLOCK:
-                printf("qq");
+                printf("QQ");
                 /*dat1 = getDat(CT,&BlStack->First,((BTree *) &I->add1));
                 type1 = getType((BTree *) &I->add1);
                 printf("type %d \n",type1);
