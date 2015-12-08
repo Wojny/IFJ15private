@@ -4,9 +4,9 @@
 #include "syn_expression.c"
 //#include "interpret.c"
 tList *L;
-void setL(tList *List){
+/*void setL(tList *List){
   L=List;
-}
+}*/
 string str;
 void initNullStr(){
   strInit(&str);

@@ -21,8 +21,13 @@ int interpret(tList *L, GSTable *G, constTable *CT)
   if(((L=malloc(sizeof (tList)))==NULL)) return -1;
   listInit(L);
   */
-
+    strPrint((*G)->FunRoot->ident);
     listFirst(L);
+    /*while(L->active != NULL)
+    {
+        printf("ins %d \n",L->active->instr.Type);
+        listNext(L);
+    }*/
     tInstr *I;
     tInstr *nextI;
 
@@ -52,6 +57,7 @@ int interpret(tList *L, GSTable *G, constTable *CT)
     while(1)
     {
         I = listGetData(L);
+        printf("abc");
         if(L->active->nextItem != NULL) nextI = listGetNextData(L);
 
         switch(I->Type)
@@ -976,8 +982,11 @@ int interpret(tList *L, GSTable *G, constTable *CT)
             add2 source
             */
             case I_ASSIGN:
+                type1 = getType((BTree *) &I->add1);
+                if(BlStack->First==NULL) printf(" asd %d",type1);
                 dat1 = getDat(CT,&BlStack->First,((BTree *) &I->add1));
                 type1 = getType((BTree *) &I->add1);
+                printf("abc");
                 dat2 = getDat(CT,&BlStack->First,((BTree *) &I->add2));
                 type2 = getType((BTree *) &I->add2);
 
@@ -1081,14 +1090,19 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                 break;
 
             case I_CREATE_BLOCK:
-                dat1 = getDat(CT,&BlStack->First,((BTree *) &I->add1));
+                printf("qq");
+                /*dat1 = getDat(CT,&BlStack->First,((BTree *) &I->add1));
                 type1 = getType((BTree *) &I->add1);
+                printf("type %d \n",type1);
                 if(!(isString(type1)))
                 {
                     AddERR(line,IFJ_ERR_SEMANTIC);
                     return 4;
-                }
-                BlockStackAdd(&BlStack,G,dat1->str);
+                }*/
+
+                strPrint((string *)I->add1);
+                BlockStackAdd(&BlStack,G,(string *)I->add1);
+                printf("ww");
                 break;
 
             case I_CALL:
@@ -1162,7 +1176,8 @@ int interpret(tList *L, GSTable *G, constTable *CT)
                     {
                         *dat1->i = *(int *)dat2->f;
                     }
-                    if(isString(type2))
+                    if(isString(type2)) printf("ww");
+                break;
                     {
                         AddERR(line,IFJ_ERR_SEMANTIC);
                         return 4;

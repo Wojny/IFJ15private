@@ -184,7 +184,7 @@ bool Statement(string *attr, int *type)
 		{
 			NextToken(attr,type);
 			if(*type == CIN)// ked je to ">>"
-			{				
+			{
 				NextToken(attr,type);
 				if(*type == ID)
 				{
@@ -298,7 +298,7 @@ bool Statement(string *attr, int *type)
                 AddERR(line,IFJ_ERR_SYNTAX);
                 res = false;
 			}
-			//!!!!!!!!!!!!!!!!!!!!!!!!!1asi potrebuje Nexttoken aby bol testovan lebo syn_exp prebere to do ')' !!!!!!!!!!!!!!!!!!!!!!!!!! 
+			//!!!!!!!!!!!!!!!!!!!!!!!!!1asi potrebuje Nexttoken aby bol testovan lebo syn_exp prebere to do ')' !!!!!!!!!!!!!!!!!!!!!!!!!!
 			if(*type == LBRACKET)
 			{
 				CreateInst(I_IF_COND,NULL,NULL,NULL,L);
@@ -399,6 +399,7 @@ bool Statement(string *attr, int *type)
 
 		if(BTDelete(&ActualFN->BTroot,ProgDepth,&ActualFN->tempSTable) == -1)
 			AddERR(line,IFJ_ERR_PROGRAM);
+
 		int EndBracket = getBD();
 		if(EndBracket == I_IF)
 			CreateInst(I_END_IF,NULL,NULL,NULL,L);
@@ -406,10 +407,16 @@ bool Statement(string *attr, int *type)
 			CreateInst(I_END_FOR,NULL,NULL,NULL,L);
 		else if(EndBracket == I_ELSE)
 			CreateInst(I_END_ELSE,NULL,NULL,NULL,L);
-		else if(EndBracket == I_FUNC)
+		else if(EndBracket == I_FUNC){
 			CreateInst(I_END_FUNC,NULL,NULL,NULL,L);
+		}
 		else if(EndBracket == I_MAIN)
-			CreateInst(I_END_MAIN,NULL,NULL,NULL,L);
+        {
+            CreateInst(I_END_MAIN,NULL,NULL,NULL,L);
+
+        }
+
+
 
 		ProgDepth--;
 		if(ProgDepth == 0)
@@ -435,11 +442,11 @@ bool FunctionDef(string *attr, int *type)
 	int ParamType;
 	bool res = true;
 	if (strcmp(attr->str,"lenght")==0)//vytvori instrukci  predem a uzivatelem deklarovanej funkci a priradi tam adresi
-	{		
+	{
 		NextToken(attr,type);
 		if( *type == LPARENTH)
 		{
-			if(IALFunctCall(attr, type, &ParamCounter, CSTR) == true)//ActualAdd2 sa uklada aktualne spracovani parameter
+			if(IALFunctCall(attr, type, ParamCounter, CSTR) == true)//ActualAdd2 sa uklada aktualne spracovani parameter
 			{
 				if(ParamCounter == 1)
 					CreateInst(I_LENGHT, NULL, NULL, NULL,L);
@@ -475,7 +482,7 @@ bool FunctionDef(string *attr, int *type)
 						ParamType = CINTEGER;
 						break;
 				}
-				if(IALFunctCall(attr, type, &ParamCounter, ParamType) == false)
+				if(IALFunctCall(attr, type, ParamCounter, ParamType) == false)
 				{
 					AddERR(line,IFJ_ERR_SYNTAX);
 					res = false;
@@ -506,7 +513,7 @@ bool FunctionDef(string *attr, int *type)
 						ParamType = CSTR;
 						break;
 				}
-				if(IALFunctCall(attr, type, &ParamCounter, ParamType) == false)
+				if(IALFunctCall(attr, type, ParamCounter, ParamType) == false)
 				{
 					AddERR(line,IFJ_ERR_SYNTAX);
 					res = false;
@@ -536,7 +543,7 @@ bool FunctionDef(string *attr, int *type)
 						ParamType = CSTR;
 						break;
 				}
-				if(IALFunctCall(attr, type, &ParamCounter, ParamType) == false)
+				if(IALFunctCall(attr, type, ParamCounter, ParamType) == false)
 				{
 					AddERR(line,IFJ_ERR_SYNTAX);
 					res = false;
@@ -557,7 +564,7 @@ bool FunctionDef(string *attr, int *type)
 		NextToken(attr,type);
 		if( *type == LPARENTH)
 		{
-			if(IALFunctCall(attr, type, &ParamCounter, CSTR) == true)
+			if(IALFunctCall(attr, type, ParamCounter, CSTR) == true)
 			{
 				if(ParamCounter == 1)
 					CreateInst(I_SORT, attr, NULL, NULL,L);
@@ -743,7 +750,7 @@ bool Param(string *attr, int *type)//ked existujem parameter zavolame tuto funkc
 				}
 			}
 			else //ked nie je ID tak moze byt CINT,CSTR,CDOUBLE alebo '('
-			{				
+			{
 				sTree SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,SEMICOLON); //syn_exp zaciklenie
 				if(SynSemTree == NULL)
 					return false;
@@ -773,6 +780,7 @@ bool FunctionParams(string *attr, int *type, int typFN, string *Identif)
 	bool res = true;
 	if((ActualFN=GSTadd(&GST, Identif, typFN)) != NULL)
 	{
+
 		ProgDepth++;
 		addFunInst(&ActualFN, L->last);
 		if(BTAddID(&ActualFN,Str0,typFN,ProgDepth,ProgKeys) == -1)//Param Str0 je navratova hodnota funkce
@@ -783,7 +791,7 @@ bool FunctionParams(string *attr, int *type, int typFN, string *Identif)
 		else
 			ProgKeys++;
 		while(*type != RPARENTH)//volam do okola kim ne narazim na konec funkcnich param
-  		{			
+  		{
 			NextToken(attr,type);
 			if(*type == KSTRING || *type == KINTEGER || *type == KDOUBLE || *type == RPARENTH)
 				switch (*type)
@@ -879,7 +887,7 @@ bool FunctionParams(string *attr, int *type, int typFN, string *Identif)
 								ProgKeys++;
 							}
 							if(NextToken(attr,type) == 0)
-							{							 	
+							{
 							 	if(*type == RPARENTH || *type == COLON)//NextToken musi byt "," alebo ")" inac ERROR
 									break;
 								else
@@ -915,7 +923,15 @@ bool FunctionParams(string *attr, int *type, int typFN, string *Identif)
 			break;
 		}
 		if (strcmp(Identif->str,"main")==0)
+        {
 			CreateInst(I_MAIN, NULL, NULL, NULL,L);
+			string *test;
+			test=malloc(sizeof(string));
+			strInit(test);
+			strCopyString(test,ActualFN->ident);
+			strPrint(test);
+			CreateInst(I_CREATE_BLOCK, test, NULL, NULL,L);
+        }
 		else
 			CreateInst(I_FUNC, Identif, NULL, NULL,L);
 
@@ -930,7 +946,7 @@ bool FunctionParams(string *attr, int *type, int typFN, string *Identif)
 				}
 				else
 				{
-
+                    setFunDefined(ActualFN);
 					if(strcmp(Identif->str,"main")==0)
 						AddBD(I_MAIN);
 					else
@@ -949,13 +965,13 @@ bool FunctionParams(string *attr, int *type, int typFN, string *Identif)
 	{
 		AddERR(line,IFJ_ERR_PROGRAM);
 		res = false;
-	}	
+	}
 	return res;
 }
 
 bool Initializ(string *attr, int *type)
 {
-	string Identif;	
+	string Identif;
 	bool res = true;
 	//pri deklaraci KINT ...   //CINT ked je cislo //IINTEGER typ promeny == identifikator
 	switch (*type)
@@ -1077,7 +1093,7 @@ bool Initializ(string *attr, int *type)
 		case KINTEGER:
 			NextToken(attr, type);
 			if(*type == ID)
-			{				
+			{
 				strCopyString(&Identif,attr);
 				if(strcmp(attr->str,"main") == 0)//IDENTIFIKATOR je main depth=0 must be
 				{
@@ -1110,11 +1126,11 @@ bool Initializ(string *attr, int *type)
 					NextToken(attr, type);
 					if(*type == LPARENTH)//INDETIFIKATOR je meno Funkce
 					{
-						
+
 						if(SearchFN(GST->FunRoot, &Identif) == NULL)//kontrolujem ze bol uz vytvoren tato funkce alebo ne
 						{
 							if(FunctionParams(attr,type,KINTEGER,&Identif) == false)
-							{								
+							{
 								AddERR(line,IFJ_ERR_SYNTAX);
 								res = false;
 							}
@@ -1176,7 +1192,7 @@ bool Initializ(string *attr, int *type)
 					else
 					{
 						AddERR(line,IFJ_ERR_SYNTAX);
-						res = false;						
+						res = false;
 					}
 				}
 			}
@@ -1311,7 +1327,8 @@ bool parser()
     int *type;
     if(((type=malloc(sizeof(int)))==NULL)) return false; // allokace type
     if(((L=malloc(sizeof(tList)))==NULL)) return false; // allokace L list
-    setL(L);
+    listInit(L);
+    //setL(L);
 	if (GSTinit(&GST) == -1)	// inicializace GST tabulky
 	{
 		AddERR(line, IFJ_ERR_PROGRAM);

@@ -10,7 +10,7 @@
 
 
 
-bool main(void){
+int main(void){
   FILE *f;
   if( (f = fopen("./file.cpp", "r+")) == NULL )
   {
@@ -18,6 +18,8 @@ bool main(void){
   }
   setSourceFile(f);
   parser();
+  listFirst(L);
+  interpret(L,&GST,&newCTable);
   strPrint(GST->FunRoot->ident);
  // return interpret(L, GST, &newCTable);
 

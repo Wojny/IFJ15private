@@ -25,7 +25,6 @@ FN ActualFN;
 BTree ActualAdd1;
 BTree ActualAdd2;
 BTree ActualAdd3;
-tList *L;
 
 typedef struct BD
 {

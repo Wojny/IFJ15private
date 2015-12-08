@@ -261,19 +261,23 @@ int BlockStackInit(BlockStack *BlStack){
 return   vraci ne/uspesnost operace pridani
 */
 int BlockStackAdd(BlockStack *BlStack,GSTable *GST,string *id){
+  printf("iii");
   BU *newBU;
   BPtr newBPtr;
   if(((newBPtr=malloc(sizeof (struct BlockPtr)))==NULL)){
     return -1;
   }
+  strPrint((*GST)->FunRoot->ident);
   FN pomFN=SearchDefinedFN((*GST)->FunRoot,id);
+  if(pomFN==NULL) printf("qwerty");
   int size=tempSTlength(pomFN->tempSTable);
   if(((newBU=malloc(sizeof (struct BlockUnit)*size))==NULL)){
     return -1;
   }
   tempST2BU(pomFN->tempSTable,newBU);
-
+  printf("iui");
   if((*BlStack)->First==NULL){
+        printf("uuuu");
     newBPtr->nxtBPtr=NULL;
     newBPtr->BUSize=size;
     newBPtr->BUPtr=newBU;
@@ -782,18 +786,18 @@ union Dat *getDat(constTable *newCTable,BPtr *BP,BTree *BTpom){
 
 union Dat *getDatByKey(BPtr *BP,int key){
   union Dat *d;
-  
+
     d=(*BP)->BUPtr[key].data;
     return d;
-  
+
 }
 
 int getTypeByKey(BPtr *BP,int key){
 
-  
+
     return (*BP)->BUPtr[key].type;
-    
-  
+
+
 }
 
 int getType(BTree *BTpom){
