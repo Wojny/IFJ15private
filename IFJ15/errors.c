@@ -93,8 +93,3 @@ void AddERR(int ERRLine, int ERRType)
   ERRList[ErrCounter].ErrorType = ERRType;
   ErrCounter++;
 }
-
-
-
-
-
