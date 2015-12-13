@@ -860,7 +860,7 @@ int checkFunParams(FN pomFN,FN pomFNvzor){
     if(pomFN!=pomFNvzor) pomBT=SearchTempSTByKey(pomFN, i);
     else return 0;
     if(pomBT==NULL){
-            exit(-3);
+
          return -1;
     }
 

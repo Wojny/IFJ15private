@@ -41,8 +41,14 @@ int main(int argc, char **argv){
     if(FErr==11) return 99;
     else return FErr;
   }
-  L->active=(SearchFN(GST->FunRoot,&mainName))->instr;
+  FN pomFN=SearchFN(GST->FunRoot,&mainName);
+  if(pomFN==NULL){
+    AddERR(line,IFJ_ERR_SEMANTIC);
+    if((FErr=PrintERR()) != 0)
+      return FErr;
 
+  }
+  L->active=pomFN->instr;
 
   interpret(L,&GST,&newCTable);
   //dealokace globalni tabulky symbolu a tabulky konstant

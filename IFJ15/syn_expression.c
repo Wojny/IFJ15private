@@ -177,6 +177,12 @@ sTree syn_exp(int inittype,string *inits,FN newFN,constTable newCTable,int endTy
     }
     else if(c==STGREAT){//>
       int rule=getRuleNum(STST);
+      if(rule==-1){
+        deleteSynTree(STST->First);
+        deleteSTStack(&STST);
+
+        return NULL;
+      }
       execRule(&STST,rule);
     }
     else if(c==STEND){
@@ -202,6 +208,7 @@ int comp(sTreeStack STST,sTree ST0){
   int typeST0=convConstTypes(ST0->stype);
   if((typeSTpom==-1)||(typeST0==-1)) return STNULL;
   i=PTable[typeSTpom][typeST0];
+  if(i==PTNULL) return STNULL;
   return i;
 }
 // konverze konstant
@@ -259,6 +266,7 @@ int getRuleNum(sTreeStack STST){
       if(ST2->stype==STLESSSEP) return 10;
 
     }
+
   }
   else if(STST->First->isE==1){
 

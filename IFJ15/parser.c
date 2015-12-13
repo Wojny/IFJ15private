@@ -16,6 +16,7 @@ int ProgKeys=0;
 int forEND=0;
 bool ElseSwitch = false;
 int assignment=0;
+int isAuto=0;
 string *Identif;
 
 int InitBD()//inicializace Depth Table
@@ -100,7 +101,7 @@ bool Statement(string *attr, int *type)
 	if (strcmp(attr->str, "auto")==0)
 	{
 		assignment=0;
-
+        isAuto=1;
 		NextToken(attr,type);
 		if(*type == ID)
         {
@@ -108,10 +109,12 @@ bool Statement(string *attr, int *type)
 			NextToken(attr, type);
 			if(Param(attr, type) == false)
 			{
-				res = false;
+				isAuto=0;
+                return false;
 			}
 			else
 			{
+			    isAuto=0;
 				if(BTAddID(&ActualFN,Identif,ActualAdd2->type,ProgDepth,ProgKeys) == -1)//vratim typ a vytvorim Param
 				{
 					AddERR(line,IFJ_ERR_PROGRAM);
@@ -124,6 +127,12 @@ bool Statement(string *attr, int *type)
 					CreateInst(I_ASSIGN,ActualAdd1,ActualAdd2,NULL,L);
 				}
 			}
+		}
+		else
+        {
+            isAuto=0;
+			AddERR(line,IFJ_ERR_SYNTAX);
+			res = false;
 		}
 		return res;
 	}
@@ -219,8 +228,10 @@ bool Statement(string *attr, int *type)
             else
             {
                 sTree SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,SEMICOLON);
-                if(SynSemTree == NULL)
-                    res = false;
+                if(SynSemTree==NULL){
+				      AddERR(line,IFJ_ERR_SYNTAX);
+				      return false;
+                }
                 if(sem_sym(SynSemTree) != -1 ){
                     ActualAdd1=SynSemTree->node;
                     deleteSynTree(SynSemTree);
@@ -264,8 +275,10 @@ bool Statement(string *attr, int *type)
                         if(SearchBT(ActualFN, attr) != NULL)
                         {
                             sTree SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,RPARENTH);
-                            if(SynSemTree == NULL)
-                                res = false;
+                            if(SynSemTree==NULL){
+						      AddERR(line,IFJ_ERR_SYNTAX);
+						      return false;
+						    }
                             if(sem_sym(SynSemTree) != -1 ){
                                 ActualAdd2=SynSemTree->node;
                                 deleteSynTree(SynSemTree);
@@ -283,8 +296,10 @@ bool Statement(string *attr, int *type)
                 else
                 {
                     sTree SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,RPARENTH);
-					if(SynSemTree == NULL)
-						return false;
+					if(SynSemTree==NULL){
+					     AddERR(line,IFJ_ERR_SYNTAX);
+					     return false;
+                    }
 					if(sem_sym(SynSemTree) != -1 ){
 						ActualAdd2=SynSemTree->node;
 						deleteSynTree(SynSemTree);
@@ -360,8 +375,10 @@ bool Statement(string *attr, int *type)
 
 			NextToken(attr,type);
 			sTree SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,SEMICOLON);//for( ; a < 8 ; )
-			if(SynSemTree == NULL)
-				res = false;
+			if(SynSemTree==NULL){
+			     AddERR(line,IFJ_ERR_SYNTAX);
+			     return false;
+            }
 			if(sem_sym(SynSemTree) != -1 ){
 				ActualAdd2=SynSemTree->node;
 			    deleteSynTree(SynSemTree);
@@ -765,11 +782,20 @@ bool Param(string *attr, int *type)//ked existujem parameter zavolame tuto funkc
 						if(forEND)
 						{
 						  SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,RPARENTH);
+						  if(SynSemTree==NULL){
+						    AddERR(line,IFJ_ERR_SYNTAX);
+						    return false;
+						  }
 						  forEND=0;
 						  assignment=1;
 						}
-						else
+						else{
 							SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,SEMICOLON);
+                            if(SynSemTree==NULL){
+						      AddERR(line,IFJ_ERR_SYNTAX);
+						      return false;
+						    }
+						}
 						if(SynSemTree == NULL)
 							return false;
 						if(sem_sym(SynSemTree) != -1 ){
@@ -792,11 +818,20 @@ bool Param(string *attr, int *type)//ked existujem parameter zavolame tuto funkc
 				if(forEND)
 				{
                     SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,RPARENTH); //syn_exp zaciklenie
+                    if(SynSemTree==NULL){
+					    AddERR(line,IFJ_ERR_SYNTAX);
+					    return false;
+                    }
                     forEND=0;
                     assignment=1;
 				}
-				else
+				else{
 				  SynSemTree = syn_exp(*type,attr,ActualFN,newCTable,SEMICOLON); //syn_exp zaciklenie
+                  if(SynSemTree==NULL){
+					AddERR(line,IFJ_ERR_SYNTAX);
+					return false;
+                  }
+				}
 				if(SynSemTree == NULL)
 					return false;
 				if(sem_sym(SynSemTree) != -1 ){
@@ -812,7 +847,7 @@ bool Param(string *attr, int *type)//ked existujem parameter zavolame tuto funkc
 			AddERR(line,IFJ_ERR_SYNTAX);
 			res = false;
 		}
-    if(assignment==1)
+        if(assignment==1)
 		{
 		    CreateInst(I_ASSIGN,ActualAdd1,ActualAdd2,NULL,L);
 		    assignment=0;
@@ -820,8 +855,14 @@ bool Param(string *attr, int *type)//ked existujem parameter zavolame tuto funkc
 	}
 	else
 	{
-		AddERR(line,IFJ_ERR_SYNTAX);
-		res = false;
+		if(isAuto==1){
+		  AddERR(line,IFJ_ERR_DATA);
+		  res = false;
+		}
+		else{
+		  AddERR(line,IFJ_ERR_SYNTAX);
+		  res = false;
+		}
 	}
 	return res;
 }
@@ -979,6 +1020,10 @@ bool FunctionParams(string *attr, int *type, int typFN, string *Identif)
 
 		if (strcmp(Identif->str,"main")==0)
         {
+            if(((strGetLength(ActualFN->type))>1)||(strCmpConstStr(ActualFN->type, "i")!=0)){
+              AddERR(line,IFJ_ERR_SYNTAX);
+              return false;
+            }
 			CreateInst(I_MAIN, NULL, NULL, NULL,L);
 			addFunInst(&ActualFN, L->last);
 			CreateInst(I_CREATE_BLOCK, ActualFN->ident, NULL, NULL,L);
@@ -1420,6 +1465,11 @@ bool parser()
 		free(attr);
 		free(type);
 		free(BDepth);
+		if(ProgDepth>0)
+        {
+           AddERR(line,IFJ_ERR_SYNTAX);
+           return false;
+        }
 	}
 	return res;
 

@@ -115,13 +115,17 @@ int getNextToken(string *attr){
         }
         break;
       case 2:
-        if(c=='\n'){
+        if((c=='\n')||(c==EOF)){
           state=0; // konec radkoveho komentare
-          line++;
+          if(c=='\n') line++;
         }
         break;
       case 3:
         if(c=='*') state=4; // kontrola */
+        else if(c==EOF){
+          AddERR(line,IFJ_ERR_LEXICAL);
+          return ERROR; // lexikalni chyba
+        }
         break;
       case 4:
         if(c=='/') state=0; // konec blokoveho komentare
